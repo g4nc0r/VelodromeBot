@@ -35,6 +35,10 @@ client.on('messageCreate', msg => {
     msg.channel.send("Test message received");
   }
 
+  if (command === 'help') {
+    dataFunctions.help(msg);
+  }
+
   // VELO price check
   if (command === 'price') {
     dataFunctions.getUSDPrice(msg);

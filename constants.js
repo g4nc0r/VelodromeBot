@@ -31,12 +31,28 @@ const pools = [
 ];
 
 const commands = [
-  { command: '!price', description: 'Latest VELO price' },
-  { command: '!marketcap', description: 'Latest VELO marketcap'},
-  { command: '!apr <pool>', descriotion: 'Fetches pool APR info - pool name format: \'velo usdc\''}
+  { command: '**!price** - Latest VELO price' },
+  { command: '**!marketcap** - Latest VELO marketcap'},
+  { command: '**!supply** - Latest supply of VELO, veVELO and % locked'},
+  { command: '**!apr <pool>** - Fetches pool APR info - pool name format: \'velo usdc\''}
 ]
+
+const helpListUnicode = '\`\`\`' +
+  `╔═════════════╦══════════════════════════════════════════════════════╗\n` +
+  `║ Help        ║ Description                                          ║\n` +
+  `╠═════════════╬══════════════════════════════════════════════════════╣\n` +
+  `║ !price      ║ Latest VELO price                                    ║\n` +
+  `╠═════════════╬══════════════════════════════════════════════════════╣\n` +
+  `║ !marketcap  ║ Latest VELO marketcap                                ║\n` +
+  `╠═════════════╬══════════════════════════════════════════════════════╣\n` +
+  `║ !supply     ║ Latest supply of VELO, veVELO and % locked           ║\n` +
+  `╠═════════════╬══════════════════════════════════════════════════════╣\n` +
+  `║ !apr <pool> ║ Fetches pool APR inf - pool name format velousdc     ║\n` +
+  `╚═════════════╩══════════════════════════════════════════════════════╝\n` 
+  + '\`\`\`';
 
 module.exports = {
   pools: pools,
-  commands: commands
+  commands: commands,
+  helpListUnicode: helpListUnicode
 };
