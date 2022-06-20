@@ -30,29 +30,36 @@ const pools = [
   {arg: 'velo/alusd', name: 'vAMM-VELO/alUSD', addr: '0x3e2882ef90fafab1894bec08f57745a0dd63950a', gauge: '0x6FA6fC9ecDbB0917731cb90d596210d7D5e6CD7b',token0id: 'velodrome-finance', token1id: 'alchemix-usd', color:'#016962'}
 ];
 
-const commands = [
-  { command: '**!price** - Latest VELO price' },
-  { command: '**!marketcap** - Latest VELO marketcap'},
-  { command: '**!supply** - Latest supply of VELO, veVELO and % locked'},
-  { command: '**!apr <pool>** - Fetches pool APR info - pool name format: \'velo usdc\''}
-]
+const optimisticTokenAddresses = [
+  { id: "weth", symbol: "WETH", contract: "0x4200000000000000000000000000000000000006" },
+  { id: "synapse-2",symbol: "SYN", contract: "0x5a5fff6f753d7c11a56a52fe47a177a87e431655" },
+  { id: "arbinyan",symbol: "NYAN", contract: "0xA807D4Bc69b050b8D0c99542cf93903C2EFe8b4c" },
+  { id: "usd-coin", symbol: "USDC", contract: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607" },
+  { id: "tether",symbol: "USDT", contract: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58" },
+  { id: "dai",symbol: "DAI", contract: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1" },
+  { id: "havven",symbol: "SNX", contract: "0x8700dAec35aF8Ff88c16BdF0418774CB3D7599B4" },
+  { id: "wrapped-bitcoin",symbol: "WBTC", contract: "0x68f180fcCe6836688e9084f035309E29Bf0A2095" },
+  { id: "thales",symbol: "THALES", contract: "0x217d47011b23bb961eb6d93ca9945b7501a5bb11" },
+  { id: "stargate-finance",symbol: "STG", contract: "0x296F55F8Fb28E498B858d0BcDA06D955B2Cb3f97" },
+  { id: "hundred-finance",symbol: "HND", contract: "0x10010078a54396F62c96dF8532dc2B4847d47ED3" },
+  { id: "optimism","symbol": 'OP', contract: "0x4200000000000000000000000000000000000042" },
+  { id: "velodrome-finance",symbol: "VELO", contract: "0x3c8b650257cfb5f272f799f5e2b4e65093a11a05" },
+  { id: "lyra-finance",symbol: "LYRA", contract: "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb" },
+  { id: "nusd",symbol: "SUSD", contract: "0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9" },
+  { id: "liquity-usd",symbol: "LUSD", contract: "0xc40F949F8a4e094D1b49a23ea9241D289B7b2819" }
+];
 
-const helpListUnicode = '\`\`\`' +
-  `╔═════════════╦══════════════════════════════════════════════════════╗\n` +
-  `║ Help        ║ Description                                          ║\n` +
-  `╠═════════════╬══════════════════════════════════════════════════════╣\n` +
-  `║ !price      ║ Latest VELO price                                    ║\n` +
-  `╠═════════════╬══════════════════════════════════════════════════════╣\n` +
-  `║ !marketcap  ║ Latest VELO marketcap                                ║\n` +
-  `╠═════════════╬══════════════════════════════════════════════════════╣\n` +
-  `║ !supply     ║ Latest supply of VELO, veVELO and % locked           ║\n` +
-  `╠═════════════╬══════════════════════════════════════════════════════╣\n` +
-  `║ !apr <pool> ║ Fetches pool APR inf - pool name format velousdc     ║\n` +
-  `╚═════════════╩══════════════════════════════════════════════════════╝\n` 
-  + '\`\`\`';
+const helpList = '```' +
+  `!priceLatest     - VELO price\n` +
+  `!marketcap       - VELO marketcap\n` +
+  `!supply          - VVELO, veVELO, %locked\n` +
+  `!apr <pool>      - Pool APR\n` +
+  `!poolsize <pool> - Pool size\n` +
+  `!poolinfo <pool> - Pool APR and size` + 
+  '```';
 
 module.exports = {
   pools: pools,
-  commands: commands,
-  helpListUnicode: helpListUnicode
+  helpList: helpList,
+  optimisticTokenAddresses: optimisticTokenAddresses
 };

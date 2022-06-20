@@ -64,12 +64,26 @@ client.on('messageCreate', msg => {
       return;
     }
 
-    dataFunctions.getPoolInfo(msg, selectedPool);
+    dataFunctions.getPoolApr(msg, selectedPool);
   }
   
   // retrieve list of pools that can be used with !apr 
-  if(command === 'poollist') {
+  if (command === 'poollist') {
     dataFunctions.getPoolList(msg);
+  }
+
+  // get pool size info inc token amounts in a specified pool
+  if (command === 'poolsize') {
+    let selectedPool = arg[0];
+
+    dataFunctions.getPoolSize(msg, selectedPool);
+  }
+
+  // get pool apr and token sizes
+  if (command === 'poolinfo') {
+    let selectedPool = arg[0];
+
+    dataFunctions.getPoolInfo(msg, selectedPool);
   }
 });
 
