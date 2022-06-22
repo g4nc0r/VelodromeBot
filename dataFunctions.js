@@ -69,10 +69,9 @@ const getPools = async () => {
     // if the pair is a volatile pool, and the tokens are either a stable and a non-stable, and do not include one of the filters then add to array
     if (vd[i].symbol.charAt(0) === 'v') {
 
-      if ((stables.includes(vd[i].token0.symbol)) && !(stables.includes(vd[i].token1.symbol)) && 
-        !((vd[i].token0.symbol.toLowerCase()).includes('vamm-' || 'samm-')) && !((vd[i].token1.symbol.toLowerCase()).includes('vamm-' || 'samm-')) || 
-        (stables.includes(vd[i].token1.symbol)) && !(stables.includes(vd[i].token0.symbol)) && 
-        !((vd[i].token0.symbol.toLowerCase()).includes('vamm-' || 'samm-')) && !((vd[i].token1.symbol.toLowerCase()).includes('vamm-' || 'samm-'))) 
+      if (!(stables.includes(vd[i].token0.symbol.toLowerCase()) && stables.includes(vd[i].token1.symbol.toLowerCase())) &&
+          !((vd[i].token0.symbol.toLowerCase()).includes('vamm-') || (vd[i].token0.symbol.toLowerCase()).includes('samm-')) &&
+          !((vd[i].token1.symbol.toLowerCase()).includes('vamm-') || (vd[i].token1.symbol.toLowerCase()).includes('samm-'))) 
         {
 
           poolsArray.push({ 
@@ -178,9 +177,9 @@ module.exports = {
 
     arg = arg.toLowerCase();
 
-    await getPools();
     let poolList = [];
-
+    await getPools();
+    
     console.log('\x1b[34m%s\x1b[0m', `[?] getTokenPoolList called - arg: ${arg}`);
 
     for (i=0; i < poolsArray.length; i++) {
