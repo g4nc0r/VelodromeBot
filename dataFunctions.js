@@ -94,7 +94,7 @@ const getPools = async () => {
 module.exports = {
   // return list of commands
   help: function(msg) {
-    console.log('[!] !help - user requested list of commands');
+    console.log('\x1b[31m%s\x1b[0m', '[?] !help - user requested list of commands');
     return msg.channel.send(helpList);
   },
   // return current VELO USD price
@@ -103,7 +103,7 @@ module.exports = {
     let poolInfo = await axios.get(dexscreenerUrl + veloUsdcPoolAddress);
     let tokenPrice = poolInfo.data.pairs[0].priceNative;
 
-    console.log(`[$] !price - user requested price of VELO: $${tokenPrice}`);
+    console.log('\x1b[32m%s\x1b[0m', `[$] !price - user requested price of VELO: $${tokenPrice}`);
 
     const embed = new Discord.MessageEmbed()
       .setTitle('🚴‍♂️ VELO Price')
@@ -122,7 +122,7 @@ module.exports = {
     let tokenInfo = await axios.get(geckoURL);
     let fdv = (tokenInfo.data.market_data.fully_diluted_valuation.usd).toLocaleString("en", {}); 
     
-    console.log(`[*] !marketcap - User requested marketcap of VELO: $${fdv}`);
+    console.log('\x1b[32m%s\x1b[0m', `[$] !marketcap - User requested marketcap of VELO: $${fdv}`);
 
     const embed = new Discord.MessageEmbed()
       .setTitle('🚵 VELO Marketcap')
@@ -140,7 +140,7 @@ module.exports = {
     
     let { totalSupply, veTotalSupply, percentageLocked } = await onChainFunctions.getTotalSupply();
 
-    console.log(`[*] !supply - user requested total supply.VELO: ${totalSupply.toFixed(2)} veVELO: ${veTotalSupply.toFixed(2)} %locked: ${percentageLocked}`);
+    console.log('\x1b[34m%s\x1b[0m', `[*] !supply - user requested total supply.VELO: ${totalSupply.toFixed(2)} veVELO: ${veTotalSupply.toFixed(2)} %locked: ${percentageLocked}`);
     
     const embed = new Discord.MessageEmbed()
       .setTitle('🚵 VELO Supply')
@@ -159,7 +159,7 @@ module.exports = {
     await getPools();
     let poolList = [];
 
-    console.log('[*] getPoolsList called');      
+    console.log('\x1b[34m%s\x1b[0m', '[?] getPoolsList called');      
     
     for (i=0; i < poolsArray.length; i++) {
       poolList.push(poolsArray[i].arg);
@@ -181,7 +181,7 @@ module.exports = {
     await getPools();
     let poolList = [];
 
-    console.log(`[*] getTokenPoolList called - arg: ${arg}`);
+    console.log('\x1b[34m%s\x1b[0m', `[?] getTokenPoolList called - arg: ${arg}`);
 
     for (i=0; i < poolsArray.length; i++) {
       if (poolsArray[i].arg.includes(arg)) {
@@ -228,7 +228,7 @@ module.exports = {
             let aprWeekly = (apr / 52).toFixed(2)
             let aprYearly = apr.toFixed(2);
 
-            console.log(`[%] !apr ${arg} - user requested pool APR:  ${apr.toFixed(2)}%`)
+            console.log('\x1b[35m%s\x1b[0m', `[%] !apr ${arg} - user requested pool APR:  ${apr.toFixed(2)}%`)
 
             const embed = new Discord.MessageEmbed()
               .setTitle(`🚴‍♂️ ${vd[i].symbol} APR`)
@@ -286,7 +286,7 @@ module.exports = {
           }
         }
 
-        console.log(`[%] !poolsize ${arg} - user requested poolsize: ${token0_symbol}: ${reserve0.toFixed(2)} ${token1_symbol}: ${reserve1.toFixed(2)}`);
+        console.log('\x1b[35m%s\x1b[0m', `[%] !poolsize ${arg} - user requested poolsize: ${token0_symbol}: ${reserve0.toFixed(2)} ${token1_symbol}: ${reserve1.toFixed(2)}`);
 
         // return info to Discord
         const embed = new Discord.MessageEmbed()
@@ -336,7 +336,7 @@ module.exports = {
             let aprWeekly = (apr / 52).toFixed(2)
             let aprYearly = apr.toFixed(2);
 
-            console.log(`[%] !apr ${arg} - user requested poolinfo - APR: ${apr.toFixed(2)}% ${token0_symbol}: ${reserve0.toFixed(2)} ${token1_symbol}: ${reserve1.toFixed(2)}`);
+            console.log('\x1b[36m%s\x1b[0m', `[%] !apr ${arg} - user requested poolinfo - APR: ${apr.toFixed(2)}% ${token0_symbol}: ${reserve0.toFixed(2)} ${token1_symbol}: ${reserve1.toFixed(2)}`);
 
             const embed = new Discord.MessageEmbed()
               .setTitle(`🚵 ${poolTitle} Pool Info`)

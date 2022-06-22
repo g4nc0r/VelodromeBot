@@ -8,11 +8,11 @@ const dataFunctions = require('./dataFunctions.js');
 const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES] });
 
 client.on('ready', () => {
-  console.log('\x1b[33m%s\x1b[0m', `[*] Logged in as ${client.user.tag}!`);
+  console.log('\x1b[41m%s\x1b[0m', `##### Logged in as ${client.user.tag}! #####`);
   // lists current active servers 
-  console.log('- Servers: ')
+  console.log('\x1b[33m%s\x1b[0m', 'Servers: ')
   client.guilds.cache.forEach((guild) => {
-    console.log("[~] " + guild.name)
+    console.log('\x1b[33m%s\x1b[0m', '[~] ' + guild.name)
   });
 
   const testingChannel = client.channels.cache.get(process.env.TESTING_CHANNEL_ID);
