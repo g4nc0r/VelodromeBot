@@ -55,15 +55,15 @@ client.on('messageCreate', msg => {
   }
 
   // check pool APR
-  if(command === 'apr') {
-    let selectedPool = arg[0];
+  if (command === 'apr') {
 
     if (arg.length > 1) {
       msg.reply('Please only provide one argument. Type !poollist to see options');
-      console.log('[*] User requested pool APR but used more than one argument');
+      console.log('[*] !apr - User requested pool APR but used more than one argument');
       return;
     }
 
+    let selectedPool = arg[0];
     dataFunctions.getPoolApr(msg, selectedPool);
   }
   
@@ -72,17 +72,42 @@ client.on('messageCreate', msg => {
     dataFunctions.getPoolList(msg);
   }
 
+  // retrieve list of pools that contain a specified token
+  if (command === 'pools') {
+
+    if (arg.length > 1) {
+      msg.reply('Please only select one token.');
+      console.log('[*] !pools - User tried to search for more than one token');
+      return;
+    }
+
+    let selectedToken = arg[0];
+    dataFunctions.getTokenPoolList(msg, selectedToken);
+  }
+
   // get pool size info inc token amounts in a specified pool
   if (command === 'poolsize') {
-    let selectedPool = arg[0];
 
+    if (arg.length > 1) {
+      msg.reply('Please only select one pool. Type !poollist to see options.');
+      console.log('[*] !poolsize - User requested pool APR but used more than one argument');
+      return;
+    }
+
+    let selectedPool = arg[0];
     dataFunctions.getPoolSize(msg, selectedPool);
   }
 
   // get pool apr and token sizes
-  if (command === 'poolinfo') {
-    let selectedPool = arg[0];
+  if (command === 'pool') {
 
+    if (arg.length > 1) {
+      msg.reply('Please only select one pool. Type !poollist to see options.');
+      console.log('[*] !poolinfo - User requested pool APR but used more than one argument');
+      return;
+    }
+
+    let selectedPool = arg[0];
     dataFunctions.getPoolInfo(msg, selectedPool);
   }
 });

@@ -1,8 +1,8 @@
 const ethers = require('ethers');
 const customHttpProvider = new ethers.providers.JsonRpcProvider('https://mainnet.optimism.io');
 
-const veloAddress = '0x3c8B650257cFb5f272f799F5e2b4e65093a11a05';
-const veNFTAddress = '0x9c7305eb78a432ced5C4D14Cac27E8Ed569A2e26'
+const { veloAddress, veNftAddress } = require('./constants.js');
+
 const veloAbi = require('./abi/veloAbi.js').veloAbi;
 
 const veloContract = new ethers.Contract(veloAddress, veloAbi, customHttpProvider);
@@ -16,7 +16,7 @@ module.exports = {
   getTotalSupply: async function (msg) {
     
     let totalSupply = await veloContract.totalSupply();
-    let veTotalSupply = await veloContract.balanceOf(veNFTAddress);
+    let veTotalSupply = await veloContract.balanceOf(veNftAddress);
 
     let percentageLocked = ((veTotalSupply / totalSupply) * 100).toFixed(2);
 
