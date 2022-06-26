@@ -41,7 +41,7 @@ client.on('messageCreate', msg => {
 
   // VELO price check
   if (command === 'price') {
-    dataFunctions.getUSDPrice(msg);
+    dataFunctions.getVeloUsdPrice(msg);
   }
 
   // VELO market cap check
@@ -66,6 +66,10 @@ client.on('messageCreate', msg => {
     let selectedPool = arg[0];
     dataFunctions.getPoolApr(msg, selectedPool);
   }
+
+  if (command === 'top5') {
+    dataFunctions.getTopFiveApr(msg);
+  }
   
   // retrieve list of pools that can be used with !apr 
   if (command === 'poollist') {
@@ -83,6 +87,16 @@ client.on('messageCreate', msg => {
 
     let selectedToken = arg[0];
     dataFunctions.getTokenPoolList(msg, selectedToken);
+  }
+
+  // get list of sAMM stable pools
+  if (command === 'spools') {
+    dataFunctions.getStablePoolList(msg);
+  }
+
+  // get list of vAMM volatile pools
+  if (command === 'vpools') {
+    dataFunctions.getVolatilePoolList(msg);
   }
 
   // get pool size info inc token amounts in a specified pool

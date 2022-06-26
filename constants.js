@@ -7,28 +7,32 @@ const tokenColors = [
   {arg: 'velo', color: '#016962', id: 'velodrome-finance'},
   {arg: 'thales', color: '#0c1f3f', id:'thales'}, 
   {arg: 'frax', color: '#000000', id: 'frax'},
-  {arg: 'snx', color: '#0f0c20', id: 'synthetix-network-token'},
+  {arg: 'snx', color: '#0f0c20', id: 'havven'},
   {arg: 'weth', color: '#787e9d', id: 'weth'},
   {arg: 'usdc', color: '#2775c9', id: 'usd-coin'},
-  {arg: 'lyra', color: '#4be29d', id: 'lyra'},
+  {arg: 'lyra', color: '#4be29d', id: 'lyra-finance'},
   {arg: 'op', color: '#e70101', id: 'optimism'},
   {arg: 'bitant', color: '#7a5f3d', id: 'bitant'},
   {arg: 'link', color: '#335dd2', id: 'chainlink'},
   {arg: 'crv', color: '#ebff0c', id: 'curve-dao-token'},
   {arg: 'hnd', color: '#000000', id: 'hundred-finance'},
   {arg: 'perp', color: '#1c5c75', id: 'perpetual-protocol'},
-  {arg: 'dola', color: '#6e47d8', id: 'dola'},
   {arg: 'dai', color: '#fab324', id: 'dai'},
   {arg: 'fxs', color: '#000000', id: 'frax-share'},
   {arg: 'uni', color: '#fe007a', id: 'uniswap'},
-  {arg: 'susd', color: '#0f0c20', id: 'susd'},
+  {arg: 'susd', color: '#0f0c20', id: 'nusd'},
   {arg: 'slink', color: '#335dd2', id: 'slink'},
   {arg: 'seth', color: '#787e9d', id: 'seth'},
-  {arg: 'usdt', color: '#26a17b', id: 'tether'}
-
+  {arg: 'usdt', color: '#26a17b', id: 'tether'},
+  {arg: 'mai', color: '#db3737', id: 'mimatic'},
+  {arg: 'aleth', color: '#f5c09a', id: 'alchemix'},
+  {arg: 'alusd', color: '#f5c09a', id: 'alchemix-usd'},
+  {arg: 'lusd', color: '#2eb6ea', id: 'liquity-usd'},
+  {arg: 'dola', color: '#6135db', id: 'dola-usd'}
 ];
 
-const stables = ['usdc', 'usdt', 'frax', 'susd', 'alusd', 'dai', 'dola', 'lusd'];
+const stables = ['usdc', 'usdt', 'frax', 'susd', 'alusd', 'dai', 'dola', 'lusd', 'mai'];
+const peggedExceptions = ['aleth', 'weth'];
 
 const helpList = '```' +
   `============================================\n` +
@@ -41,7 +45,10 @@ const helpList = '```' +
   `!poollist         | List of all pools\n` +
   `!pools <token>    | Pools contining <token>\n` +
   `!poolsize <pool>  | Pool size\n` +
-  `!pool <pool>      | Pool APR and size` + 
+  `!pool <pool>      | Pool APR and size\n` +
+  `!spools           | List all sAMM pools\n` +
+  `!vpools           | List all vAMM pools` +
+  `!top5             | Top 5 pools by APR\n` +
   '```';
 
 module.exports = {
@@ -50,5 +57,6 @@ module.exports = {
   veloUsdcPoolAddress: veloUsdcPoolAddress,
   tokenColors: tokenColors,
   stables: stables,
+  peggedExceptions: peggedExceptions,
   helpList: helpList,
 };
