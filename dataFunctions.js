@@ -1,23 +1,24 @@
 const axios = require('axios');
 const Discord = require('discord.js');
+const { Canvas, Image } = require('canvas');
+const mergeImages = require ('merge-images');
 
-const { veloUsdcPoolAddress, tokenColors, helpList, stables, peggedExceptions } = require('./constants.js');
+const { veloUsdcPoolAddress, tokenColors, helpList, stables, peggedExceptions, dexscreenerUrl, velodromeApiUrl, veloFooterIcon, opFooterIcon, coingeckoFooterIcon, dexscreenerFooterIcon } = require('./constants.js');
 const onChainFunctions = require('./onChainFunctions.js');
-
-const dexscreenerUrl = 'http://api.dexscreener.com/latest/dex/pairs/optimism/';
-const velodromeApiUrl = 'https://api.velodrome.finance/api/v1/pairs'
 
 // array containing pool info pulled from Velodrome API
 let poolsArray = [];
 let stablePoolsArray = [];
 let volatilePoolsArray = [];
 
+// velodrome API call
 const getVelodromeApiData = async () => {
   let veloData = await axios.get(velodromeApiUrl);
   let vd = veloData.data.data;
   return vd;
 }
 
+// retrieve Velodrome thumbnail
 const getVeloThumbnail = async (arg) => {
 
   const geckoUrl = 'http://api.coingecko.com/api/v3/coins/';
@@ -34,6 +35,33 @@ const getVeloThumbnail = async (arg) => {
   return tokenInfo.data.image.small;
 }
 
+// return merged pool tokens icon thumbnail
+const getMergedThumbnail = async (arg0, arg1) => {
+  let token0Img;
+  let token1Img;
+
+  const geckoUrl = 'http://api.coingecko.com/api/v3/coins/';
+
+  for (let i=0; i < tokenColors.length; i++) {
+    if (tokenColors[i].arg === arg0) {
+      let token0Url = geckoUrl + tokenColors[i].id;
+      let token0Info = await axios.get(token0Url);
+      token0Img = token0Info.data.image.small;
+    }
+
+    if (tokenColors[i].arg === arg1) {
+      let token1Url = geckoUrl + tokenColors[i].id;
+      let token1Info = await axios.get(token1Url);
+      token1Img = token1Info.data.image.small;
+    }
+  }
+
+  let b64 = await mergeImages([ {src: token1Img, x: 40, y: 0}, {src: token0Img, x:0, y:0}], { width: 100, height: 55, Canvas: Canvas, Image: Image });
+  let b64StrippedHeader = b64.split(';base64,').pop();
+  return b64StrippedHeader;
+}
+
+// get token color for embed
 const getTokenColor = async (arg) => {
 
   let tokenColor = null;
@@ -58,6 +86,7 @@ const getPools = async () => {
 
 }
 
+// get sAMM pools only
 const getStablePools = async(velodromeApiCall) => {
   let vd = velodromeApiCall;
 
@@ -81,6 +110,7 @@ const getStablePools = async(velodromeApiCall) => {
   }
 }
 
+// get vAMM pools only
 const getVolatilePools = async(velodromeApiCall) => {
   let vd = velodromeApiCall;
 
@@ -125,10 +155,10 @@ module.exports = {
     const embed = new Discord.MessageEmbed()
       .setTitle('🚴‍♂️ VELO Price')
       .setColor(tokenColors[0].color)
-      .setDescription(`**$${tokenPrice}**`)
+      .setDescription(`> **$${tokenPrice}**`)
       .setThumbnail(await getVeloThumbnail())
       .setTimestamp()
-      .setFooter({ text: 'Source: Dexscreener'});
+      .setFooter({ text: 'Source: Dexscreener', iconURL: dexscreenerFooterIcon });
 
     return msg.channel.send({ embeds: [embed] });
   },
@@ -144,10 +174,10 @@ module.exports = {
     const embed = new Discord.MessageEmbed()
       .setTitle('🚵 VELO Marketcap')
       .setColor(tokenColors[0].color)
-      .setDescription(`**$${fdv}**`)
+      .setDescription(`> **$${fdv}**`)
       .setThumbnail(await getVeloThumbnail())
       .setTimestamp()
-      .setFooter({ text: 'Source: Coingecko' })
+      .setFooter({ text: 'Source: Coingecko', iconURL: coingeckoFooterIcon })
 
     return msg.channel.send({ embeds: [embed] });
 
@@ -162,10 +192,14 @@ module.exports = {
     const embed = new Discord.MessageEmbed()
       .setTitle('🚵 VELO Supply')
       .setColor(tokenColors[0].color)
-      .addField('Total Supply', `${totalSupply.toLocaleString('en', {})}`, true)
-      .addField('Total veVELO', `${veTotalSupply.toLocaleString('en', {})}`, true)
-      .addField('Percentage Locked', `${percentageLocked}%`, true)
+      .addFields(              
+        { name: 'Total Supply', value: 
+          `> 🚴🏻‍♂️ **VELO :**  ${totalSupply.toLocaleString('en', {})}\n` +
+          `> 🚴 **veVELO :**  ${totalSupply.toLocaleString('en', {})}\n` +
+          `> 🚴🏻‍♂️ **% Locked :** ${percentageLocked}%`
+        })
       .setThumbnail(await getVeloThumbnail())
+      .setFooter({ text: 'Source: Optimism', iconURL: opFooterIcon })
       .setTimestamp();
 
     return msg.channel.send({ embeds: [embed] })
@@ -320,19 +354,24 @@ module.exports = {
 
             console.log('\x1b[35m%s\x1b[0m', `[%] !apr ${arg} - user requested pool APR:  ${apr.toFixed(2)}%`)
 
+            const img64 = await getMergedThumbnail(vd[i].token0.symbol.toLowerCase(), vd[i].token1.symbol.toLowerCase());
+            const buffer = Buffer.from(img64, 'base64');
+            const att = new Discord.MessageAttachment(buffer, 'buffer.png');
+
             const embed = new Discord.MessageEmbed()
-              .setTitle(`🚴‍♂️ ${vd[i].symbol} APR`)
+              .setTitle(`${vd[i].symbol} APR`)
               .setColor(await getTokenColor(vd[i].token0.symbol.toLowerCase()))
               .addFields(
-                { name: 'Daily', value: aprDaily + '%', inline: true },
-                { name: 'Weekly', value: aprWeekly + '%', inline: true },
-                { name: 'Yearly', value: aprYearly + '%', inline: true }
-              )
-              .setThumbnail(await getVeloThumbnail(vd[i].token0.symbol.toLowerCase()))
+                { name: '☄️ APR', value:
+                  '> 🔹 **' + aprDaily + '%**' + ' *daily*\n' +
+                  '> 🔹 **' + aprWeekly + '%**' + ' *weekly*\n' +
+                  '> 🔹 **' + aprYearly + '%**' + ' *yearly*'
+                })
+              .setThumbnail('attachment://buffer.png')
               .setTimestamp()
-              .setFooter({ text: 'Source: Velodrome API' });
+              .setFooter({ text: 'Source: Velodrome API', iconURL: veloFooterIcon });
 
-              return msg.channel.send({ embeds: [embed] });
+              return msg.channel.send({ embeds: [embed], files: [att] });
           }
         }
       }
@@ -340,6 +379,7 @@ module.exports = {
     msg.reply(`Could not find ${arg}, for a list of pools type \`!poollist\``);
     return;
   },
+  // return top 5 pools by APR
   getTopFiveApr: async function (msg) {
 
     let vd = await getVelodromeApiData();
@@ -415,8 +455,8 @@ module.exports = {
 
           if ((vd[i].address.toLowerCase() === (poolAddress).toLowerCase())) {
 
-            token0_symbol = vd[i].token0.symbol;
-            token1_symbol = vd[i].token1.symbol;
+            token0_symbol = vd[i].token0.symbol.toLowerCase();
+            token1_symbol = vd[i].token1.symbol.toLowerCase();
 
             reserve0 = vd[i].reserve0;
             reserve1 = vd[i].reserve1;
@@ -428,27 +468,31 @@ module.exports = {
 
         console.log('\x1b[35m%s\x1b[0m', `[%] !poolsize ${arg} - user requested poolsize: ${token0_symbol}: ${reserve0.toFixed(2)} ${token1_symbol}: ${reserve1.toFixed(2)}`);
 
+        const img64 = await getMergedThumbnail(token0_symbol, token1_symbol);
+        const buffer = Buffer.from(img64, 'base64');
+        const att = new Discord.MessageAttachment(buffer, 'buffer.png');
+
         // return info to Discord
         const embed = new Discord.MessageEmbed()
-          .setTitle(`🚴‍♂️ ${poolTitle} Pool Size`)
+          .setTitle(`${poolTitle} Pool Size`)
           .setColor(await getTokenColor(token0_symbol.toLowerCase()))
           .addFields(
-            { name: `${token0_symbol}`, value: `${reserve0.toLocaleString("en", {})}`, inline: true},
-            { name: `${token1_symbol}`, value: `${reserve1.toLocaleString("en", {})}`, inline: true}
-          )
-          .setThumbnail(await getVeloThumbnail(token0_symbol.toLowerCase()))
+            { name: '🪙 TVL', value: 
+            `> 🚴🏻‍♂️ **${token0_symbol.toUpperCase()} :**  ` + `${reserve0.toLocaleString("en", {})}\n` +
+            `> 🚴 **${token1_symbol.toUpperCase()} :**  ` + `${reserve1.toLocaleString("en", {})}`
+            })
+          .setThumbnail('attachment://buffer.png')
           .setTimestamp()
-          .setFooter({ text: 'Source: Velodrome API' });
+          .setFooter({ text: 'Source: Velodrome API', iconURL: veloFooterIcon });
 
-        return msg.channel.send({ embeds: [embed] });
+        return msg.channel.send({ embeds: [embed], files: [att] });
       }
     } 
     msg.reply(`Could not find ${arg}, for a list of pools type \`!poollist\``);
     return;
   },
-  // get pool apr and size
+  // get pool size and APR
   getPoolInfo: async function (msg, arg) {
-    
     arg = arg.toLowerCase();
 
     await getPools();
@@ -469,9 +513,9 @@ module.exports = {
             let poolTitle = vd[i].symbol;
 
             let reserve0 = vd[i].reserve0;
-            let token0_symbol = vd[i].token0.symbol;
+            let token0_symbol = vd[i].token0.symbol.toLowerCase();
             let reserve1 = vd[i].reserve1;
-            let token1_symbol = vd[i].token1.symbol;
+            let token1_symbol = vd[i].token1.symbol.toLowerCase();
 
             let apr = vd[i].apr;
             let aprDaily = (apr / 365).toFixed(2);
@@ -480,25 +524,32 @@ module.exports = {
 
             console.log('\x1b[36m%s\x1b[0m', `[%] !apr ${arg} - user requested poolinfo - APR: ${apr.toFixed(2)}% ${token0_symbol}: ${reserve0.toFixed(2)} ${token1_symbol}: ${reserve1.toFixed(2)}`);
 
-            const embed = new Discord.MessageEmbed()
-              .setTitle(`🚵 ${poolTitle} Pool Info`)
-              .setColor(await getTokenColor(token0_symbol.toLowerCase()))
-              .addFields(
-                { name: 'Daily', value: aprDaily + '%', inline: true },
-                { name: 'Weekly', value: aprWeekly + '%', inline: true },
-                { name: 'Yearly', value: aprYearly + '%', inline: true },
-                { name: `${token0_symbol}`, value: `${reserve0.toLocaleString("en", {})}`, inline: true},
-                { name: `${token1_symbol}`, value: `${reserve1.toLocaleString("en", {})}`, inline: true}
-              )
-              .setThumbnail(await getVeloThumbnail(token0_symbol.toLowerCase()))
-              .setTimestamp()
-              .setFooter({ text: 'Source: Velodrome API' });
+            const img64 = await getMergedThumbnail(token0_symbol, token1_symbol);
+            const buffer = Buffer.from(img64, 'base64');
+            const att = new Discord.MessageAttachment(buffer, 'buffer.png');
 
-              return msg.channel.send({ embeds: [embed] });
+            const embed = new Discord.MessageEmbed()
+              .setTitle(`${poolTitle} Pool Info`)
+              .setColor(await getTokenColor(token0_symbol))
+              .addFields(
+                { name: '☄️ APR', value:
+                  '> 🔹 **' + aprDaily + '%**' + ' *daily*\n' +
+                  '> 🔹 **' + aprWeekly + '%**' + ' *weekly*\n' +
+                  '> 🔹 **' + aprYearly + '%**' + ' *yearly*'
+                },
+                { name: '🪙 TVL', value: 
+                  `> 🚴🏻‍♂️ **${token0_symbol.toUpperCase()} :**  ` + `${reserve0.toLocaleString("en", {})}\n` +
+                  `> 🚴 **${token1_symbol.toUpperCase()} :**  ` + `${reserve1.toLocaleString("en", {})}`
+                })
+              .setThumbnail('attachment://buffer.png')
+              .setTimestamp()
+              .setFooter({ text: 'Source: Velodrome API', iconURL: veloFooterIcon });
+
+              return msg.channel.send({ embeds: [embed], files: [att] });
           }
         } 
       } 
-    } 
+    }
     msg.reply(`Could not find ${arg}, for a list of pools type \`!poollist\``);
     return;
   },
