@@ -24,6 +24,10 @@ const getVeloThumbnail = async (arg) => {
   if (arg === 'velo') {
     return staticIcons.velodromeIcon;
   }
+  // current Coingecko OP icon is low res, using this temp 
+  if (arg === 'op') {
+    return staticIcons.optimismIcon;
+  }
 
   for (let i=0; i < tokenColors.length; i++) {
     if (tokenColors[i].arg === arg) {
@@ -60,6 +64,14 @@ const getMergedThumbnail = async (arg0, arg1) => {
 
   if (arg1 === 'velo') {
     token1Img = staticIcons.velodromeIcon;
+  }
+
+  if (arg0 === 'op') {
+    token0Img = staticIcons.optimismIcon;
+  }
+
+  if (arg1 === 'op') {
+    token1Img = staticIcons.optimismIcon;
   }
 
   let b64 = await mergeImages([ {src: token1Img, x: 40, y: 0}, {src: token0Img, x:0, y:0}], { width: 100, height: 55, Canvas: Canvas, Image: Image });
@@ -544,6 +556,36 @@ module.exports = {
     }
     msg.reply(`Could not find ${arg}, for a list of pools type \`!poollist\``);
     return;
+  },
+  getVeloInfo: async function (msg) {
+    // to implement
+    // token price
+    let poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
+    let tokenPrice = poolInfo.data.pairs[0].priceNative;
+
+    // marketcap
+    let tokenInfo = await axios.get(urls.veloCoingeckoUrl);
+    let fdv = (tokenInfo.data.market_data.fully_diluted_valuation.usd).toLocaleString("en", {}); 
+
+    // onchain supply info
+    let { totalSupply, veTotalSupply, percentageLocked } = await onChainFunctions.getTotalSupply();
+
+    const embed = new Discord.MessageEmbed()
+      .setTitle('VELO Stats')
+      .setColor(tokenColors[0].color)
+      .addField('💵 Price', `> $${tokenPrice}`)
+      .addField('📈 Marketcap', `> $${fdv}`)
+      .addFields(              
+        { name: '📊 Total Supply', value: 
+          `> 🚴🏻‍♂️ **VELO :**  ${totalSupply.toLocaleString('en', {})}\n` +
+          `> 🚴 **veVELO :**  ${totalSupply.toLocaleString('en', {})}\n` +
+          `> 🚴🏻‍♂️ **% Locked :** ${percentageLocked}%`
+        })
+      .setThumbnail(await getVeloThumbnail())
+      //.setFooter({ text: 'Source: Optimism', iconURL: staticIcons.opFooterIcon })
+      .setTimestamp();
+
+    return msg.channel.send({ embeds: [embed] });
   },
   getEpoch: async function(msg) {
     // to implement

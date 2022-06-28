@@ -124,6 +124,11 @@ client.on('messageCreate', msg => {
     let selectedPool = arg[0];
     dataFunctions.getPoolInfo(msg, selectedPool);
   }
+
+  // get velo info - price, marketcap, supply
+  if (command === 'velo') {
+    dataFunctions.getVeloInfo(msg);
+  }
 });
 
 // login to Discord

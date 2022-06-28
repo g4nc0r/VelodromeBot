@@ -3,7 +3,7 @@ const veNftAddress = '0x9c7305eb78a432ced5C4D14Cac27E8Ed569A2e26';
 const veloUsdcPoolAddress = '0xe8537b6ff1039cb9ed0b71713f697ddbadbb717d';
 
 const tokenColors = [
-  {arg: 'velo', color: '#016962', id: 'velodrome-finance'},
+  {arg: 'velo', color: '#f1ece2', id: 'velodrome-finance'},
   {arg: 'thales', color: '#0c1f3f', id:'thales'}, 
   {arg: 'frax', color: '#000000', id: 'frax'},
   {arg: 'snx', color: '#0f0c20', id: 'havven'},
@@ -55,7 +55,8 @@ const staticIcons = {
   opFooterIcon: 'https://assets.coingecko.com/coins/images/25244/small/OP.jpeg',
   coingeckoFooterIcon: 'https://static.coingecko.com/s/thumbnail-007177f3eca19695592f0b8b0eabbdae282b54154e1be912285c9034ea6cbaf2.png',
   dexscreenerFooterIcon: 'https://cdn-1.webcatalog.io/catalog/dex-screener/dex-screener-icon-filled.png',
-  velodromeIcon: 'https://raw.githubusercontent.com/g4nc0r/VelodromeBot/main/static/velodrome.png'
+  velodromeIcon: 'https://raw.githubusercontent.com/g4nc0r/VelodromeBot/main/static/velodrome.png',
+  optimismIcon: 'https://raw.githubusercontent.com/g4nc0r/VelodromeBot/main/static/optimism.png'
 };
 
 const urls = {
