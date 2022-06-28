@@ -35,6 +35,8 @@ const getVeloThumbnail = async (arg) => {
   return tokenInfo.data.image.small;
 }
 
+
+
 // return merged pool tokens icon thumbnail
 const getMergedThumbnail = async (arg0, arg1) => {
   let token0Img;
