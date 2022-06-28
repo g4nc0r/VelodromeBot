@@ -28,7 +28,6 @@ const tokenColors = [
   {arg: 'alusd', color: '#f5c09a', id: 'alchemix-usd'},
   {arg: 'lusd', color: '#2eb6ea', id: 'liquity-usd'},
   {arg: 'dola', color: '#6135db', id: 'dola-usd'},
-  {arg: 'velo/usdc', color: '#016962', id: 'velo/usdc' }
 ];
 
 const stables = ['usdc', 'usdt', 'frax', 'susd', 'alusd', 'dai', 'dola', 'lusd', 'mai'];
@@ -40,23 +39,31 @@ const helpList = '```' +
   `============================================\n` +
   `!price            | VELO price\n` +
   `!marketcap        | VELO marketcap\n` +
-  `!supply           | VVELO, veVELO, %locked\n` +
+  `!supply           | VELO, veVELO, %locked\n` +
   `!apr <pool>       | Pool APR\n` +
   `!poollist         | List of all pools\n` +
   `!pools <token>    | Pools contining <token>\n` +
   `!poolsize <pool>  | Pool size\n` +
   `!pool <pool>      | Pool APR and size\n` +
   `!spools           | List all sAMM pools\n` +
-  `!vpools           | List all vAMM pools` +
+  `!vpools           | List all vAMM pools\n` +
   `!top5             | Top 5 pools by APR\n` +
   '```';
 
-const dexscreenerUrl = 'http://api.dexscreener.com/latest/dex/pairs/optimism/';
-const velodromeApiUrl = 'https://api.velodrome.finance/api/v1/pairs';
-const veloFooterIcon = 'https://assets.coingecko.com/coins/images/25783/small/velo.png';
-const opFooterIcon = 'https://assets.coingecko.com/coins/images/25244/small/OP.jpeg';
-const coingeckoFooterIcon = 'https://static.coingecko.com/s/thumbnail-007177f3eca19695592f0b8b0eabbdae282b54154e1be912285c9034ea6cbaf2.png';
-const dexscreenerFooterIcon = 'https://cdn-1.webcatalog.io/catalog/dex-screener/dex-screener-icon-filled.png';
+const staticIcons = {
+  veloFooterIcon: 'https://assets.coingecko.com/coins/images/25783/small/velo.png',
+  opFooterIcon: 'https://assets.coingecko.com/coins/images/25244/small/OP.jpeg',
+  coingeckoFooterIcon: 'https://static.coingecko.com/s/thumbnail-007177f3eca19695592f0b8b0eabbdae282b54154e1be912285c9034ea6cbaf2.png',
+  dexscreenerFooterIcon: 'https://cdn-1.webcatalog.io/catalog/dex-screener/dex-screener-icon-filled.png',
+  velodromeIcon: 'https://raw.githubusercontent.com/g4nc0r/VelodromeBot/main/static/velodrome.png'
+};
+
+const urls = {
+  coingeckoUrl: 'http://api.coingecko.com/api/v3/coins/',
+  veloCoingeckoUrl: 'http://api.coingecko.com/api/v3/coins/velodrome-finance',
+  dexscreenerUrl: 'http://api.dexscreener.com/latest/dex/pairs/optimism/',
+  velodromeApiUrl: 'https://api.velodrome.finance/api/v1/pairs'
+}
 
 module.exports = {
   veloAddress: veloAddress,
@@ -66,10 +73,6 @@ module.exports = {
   stables: stables,
   peggedExceptions: peggedExceptions,
   helpList: helpList,
-  dexscreenerUrl: dexscreenerUrl,
-  velodromeApiUrl: velodromeApiUrl,
-  veloFooterIcon: veloFooterIcon,
-  opFooterIcon: opFooterIcon,
-  coingeckoFooterIcon: coingeckoFooterIcon,
-  dexscreenerFooterIcon: dexscreenerFooterIcon
+  urls: urls,
+  staticIcons: staticIcons
 };

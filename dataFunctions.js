@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 const { Canvas, Image } = require('canvas');
 const mergeImages = require ('merge-images');
 
-const { veloUsdcPoolAddress, tokenColors, helpList, stables, peggedExceptions, dexscreenerUrl, velodromeApiUrl, veloFooterIcon, opFooterIcon, coingeckoFooterIcon, dexscreenerFooterIcon } = require('./constants.js');
+const { veloUsdcPoolAddress, tokenColors, stables, peggedExceptions, helpList, staticIcons, urls } = require('./constants.js');
 const onChainFunctions = require('./onChainFunctions.js');
 
 // array containing pool info pulled from Velodrome API
@@ -13,49 +13,53 @@ let volatilePoolsArray = [];
 
 // velodrome API call
 const getVelodromeApiData = async () => {
-  let veloData = await axios.get(velodromeApiUrl);
+  let veloData = await axios.get(urls.velodromeApiUrl);
   let vd = veloData.data.data;
   return vd;
 }
 
-// retrieve Velodrome thumbnail
+// retrieve thumbnail - defaults to Velodrome
 const getVeloThumbnail = async (arg) => {
 
-  const geckoUrl = 'http://api.coingecko.com/api/v3/coins/';
+  if (arg === 'velo') {
+    return staticIcons.velodromeIcon;
+  }
 
   for (let i=0; i < tokenColors.length; i++) {
     if (tokenColors[i].arg === arg) {
-      let tokenUrl = geckoUrl + tokenColors[i].id;
+      let tokenUrl = urls.coingeckoUrl + tokenColors[i].id;
       let tokenInfo = await axios.get(tokenUrl);
       return tokenInfo.data.image.small;
     }
   }
-
-  let tokenInfo = await axios.get(geckoUrl + 'velodrome-finance');
-  return tokenInfo.data.image.small;
+  return staticIcons.velodromeIcon;
 }
-
-
 
 // return merged pool tokens icon thumbnail
 const getMergedThumbnail = async (arg0, arg1) => {
   let token0Img;
   let token1Img;
 
-  const geckoUrl = 'http://api.coingecko.com/api/v3/coins/';
-
   for (let i=0; i < tokenColors.length; i++) {
     if (tokenColors[i].arg === arg0) {
-      let token0Url = geckoUrl + tokenColors[i].id;
+      let token0Url = urls.coingeckoUrl + tokenColors[i].id;
       let token0Info = await axios.get(token0Url);
       token0Img = token0Info.data.image.small;
     }
 
     if (tokenColors[i].arg === arg1) {
-      let token1Url = geckoUrl + tokenColors[i].id;
+      let token1Url = urls.coingeckoUrl + tokenColors[i].id;
       let token1Info = await axios.get(token1Url);
       token1Img = token1Info.data.image.small;
     }
+  }
+
+  if (arg0 === 'velo') {
+    token0Img = staticIcons.velodromeIcon;
+  }
+
+  if (arg1 === 'velo') {
+    token1Img = staticIcons.velodromeIcon;
   }
 
   let b64 = await mergeImages([ {src: token1Img, x: 40, y: 0}, {src: token0Img, x:0, y:0}], { width: 100, height: 55, Canvas: Canvas, Image: Image });
@@ -86,10 +90,13 @@ const getPools = async () => {
   await getStablePools(vd);
   await getVolatilePools(vd);
 
+  poolsArray = stablePoolsArray.concat(volatilePoolsArray);
+
+  return vd;
 }
 
 // get sAMM pools only
-const getStablePools = async(velodromeApiCall) => {
+const getStablePools = async (velodromeApiCall) => {
   let vd = velodromeApiCall;
 
   stablePoolsArray = [];
@@ -113,7 +120,7 @@ const getStablePools = async(velodromeApiCall) => {
 }
 
 // get vAMM pools only
-const getVolatilePools = async(velodromeApiCall) => {
+const getVolatilePools = async (velodromeApiCall) => {
   let vd = velodromeApiCall;
 
   volatilePoolsArray = [];
@@ -149,7 +156,7 @@ module.exports = {
   // return current VELO USD price
   getVeloUsdPrice: async function(msg) {
 
-    let poolInfo = await axios.get(dexscreenerUrl + veloUsdcPoolAddress);
+    let poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
     let tokenPrice = poolInfo.data.pairs[0].priceNative;
 
     console.log('\x1b[32m%s\x1b[0m', `[$] !price - user requested price of VELO: $${tokenPrice}`);
@@ -160,15 +167,14 @@ module.exports = {
       .setDescription(`> **$${tokenPrice}**`)
       .setThumbnail(await getVeloThumbnail())
       .setTimestamp()
-      .setFooter({ text: 'Source: Dexscreener', iconURL: dexscreenerFooterIcon });
+      .setFooter({ text: 'Source: Dexscreener', iconURL: staticIcons.dexscreenerFooterIcon });
 
     return msg.channel.send({ embeds: [embed] });
   },
   // return current VELO market cap from Coingecko
   getMarketCap: async function(msg) {
 
-    const geckoURL = 'http://api.coingecko.com/api/v3/coins/velodrome-finance';
-    let tokenInfo = await axios.get(geckoURL);
+    let tokenInfo = await axios.get(urls.veloCoingeckoUrl);
     let fdv = (tokenInfo.data.market_data.fully_diluted_valuation.usd).toLocaleString("en", {}); 
     
     console.log('\x1b[32m%s\x1b[0m', `[$] !marketcap - User requested marketcap of VELO: $${fdv}`);
@@ -179,10 +185,9 @@ module.exports = {
       .setDescription(`> **$${fdv}**`)
       .setThumbnail(await getVeloThumbnail())
       .setTimestamp()
-      .setFooter({ text: 'Source: Coingecko', iconURL: coingeckoFooterIcon })
+      .setFooter({ text: 'Source: Coingecko', iconURL: staticIcons.coingeckoFooterIcon })
 
     return msg.channel.send({ embeds: [embed] });
-
   },
   // return total supply of VELO, veVELO and % locked
   getTotalSupply: async function(msg) {
@@ -201,7 +206,7 @@ module.exports = {
           `> 🚴🏻‍♂️ **% Locked :** ${percentageLocked}%`
         })
       .setThumbnail(await getVeloThumbnail())
-      .setFooter({ text: 'Source: Optimism', iconURL: opFooterIcon })
+      .setFooter({ text: 'Source: Optimism', iconURL: staticIcons.opFooterIcon })
       .setTimestamp();
 
     return msg.channel.send({ embeds: [embed] })
@@ -280,13 +285,11 @@ module.exports = {
     let stablePoolList = [];
     let volatilePoolList = [];
     await getPools();
-
-    let allPoolsArray = stablePoolsArray.concat(volatilePoolsArray);
     
     console.log('\x1b[34m%s\x1b[0m', `[?] getTokenPoolList called - arg: ${arg}`);
 
-    for (let i = 0; i < allPoolsArray.length; i++) {
-      if (allPoolsArray[i].arg0.includes(arg) || allPoolsArray[i].arg1.includes(arg)) {
+    for (let i = 0; i < poolsArray.length; i++) {
+      if (poolsArray[i].arg0.includes(arg) || poolsArray[i].arg1.includes(arg)) {
         // retrieve stable pools containing token
         for (i=0; i < stablePoolsArray.length; i++) {
           if ((stablePoolsArray[i].arg0.includes(arg)) || (stablePoolsArray[i].arg1.includes(arg))) {
@@ -319,7 +322,6 @@ module.exports = {
           .setColor(await getTokenColor(arg))
           .setThumbnail(await getVeloThumbnail(arg))
           .addField(`🚴‍♂️ ${arg.toUpperCase()} Pools`, '\`\`\`' + stablePoolListString + `\n` + volatilePoolListString + '\`\`\`', true)
-          //.addField(`🚴‍♂️ ${arg.toUpperCase()} Stable Pools`, '\`\`\`' + volatilePoolListString + '\`\`\`', true);
 
         return msg.channel.send({ embeds: [embed] });
       }
@@ -332,19 +334,14 @@ module.exports = {
 
     arg = arg.toLowerCase();
 
-    await getPools();
+    let vd = await getPools();
 
     let poolAddress;
-
-    // get Velodrome API
-    let vd = await getVelodromeApiData();
-    
-    let allPoolsArray = stablePoolsArray.concat(volatilePoolsArray);
+   
     // check if pool requested is valid
-
-    for (let i=0; i < allPoolsArray.length; i++) {
-      if ((allPoolsArray[i].arg0 === arg) || (allPoolsArray[i].arg1 === arg)) {
-        poolAddress = allPoolsArray[i].addr;
+    for (let i=0; i < poolsArray.length; i++) {
+      if ((poolsArray[i].arg0 === arg) || (poolsArray[i].arg1 === arg)) {
+        poolAddress = poolsArray[i].addr;
         
         for (let i=0; i < vd.length; i++) {
           if((vd[i].address).toLowerCase() === (poolAddress).toLowerCase()) {  
@@ -371,7 +368,7 @@ module.exports = {
                 })
               .setThumbnail('attachment://buffer.png')
               .setTimestamp()
-              .setFooter({ text: 'Source: Velodrome API', iconURL: veloFooterIcon });
+              .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
 
               return msg.channel.send({ embeds: [embed], files: [att] });
           }
@@ -426,31 +423,27 @@ module.exports = {
       .setTitle('🚵🏻‍♂️ Top 5')
       .addField('Pools by APR', /*'\`\`\`' +*/ top5AprString /*+ '\`\`\`'*/, true)
       .setThumbnail(await getVeloThumbnail())
-      .setFooter({ text: 'Source: Velodrome API' });
+      .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
 
-    return msg.channel.send({ embeds: [embed ]});
+    return msg.channel.send({ embeds: [embed] });
   },
   // retrieve the amount of tokens within a pool
   getPoolSize: async function (msg, arg) {
 
     arg = arg.toLowerCase();
 
-    await getPools();
-
-    let allPoolsArray = stablePoolsArray.concat(volatilePoolsArray);
+    let vd = await getPools();
 
     // get pool address
-    for (let i=0; i < allPoolsArray.length; i++) {
-      if ((allPoolsArray[i].arg0 === arg) || (allPoolsArray[i].arg1 === arg)) {
+    for (let i=0; i < poolsArray.length; i++) {
+      if ((poolsArray[i].arg0 === arg) || (poolsArray[i].arg1 === arg)) {
 
         let reserve0;
         let reserve1;
         let token0_symbol;
         let token1_symbol;
         let poolTitle;
-        let poolAddress = allPoolsArray[i].addr;
-
-        let vd = await getVelodromeApiData();
+        let poolAddress = poolsArray[i].addr;
 
         // get pool token addresses and reserve sizes
         for (let i=0; i < vd.length; i++) {
@@ -485,7 +478,7 @@ module.exports = {
             })
           .setThumbnail('attachment://buffer.png')
           .setTimestamp()
-          .setFooter({ text: 'Source: Velodrome API', iconURL: veloFooterIcon });
+          .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
 
         return msg.channel.send({ embeds: [embed], files: [att] });
       }
@@ -497,16 +490,13 @@ module.exports = {
   getPoolInfo: async function (msg, arg) {
     arg = arg.toLowerCase();
 
-    await getPools();
-
-    let allPoolsArray = stablePoolsArray.concat(volatilePoolsArray);
+    let vd = await getPools();
 
     // check if pool requested is valid
-    for (let i=0; i < allPoolsArray.length; i++) {
-      if ((allPoolsArray[i].arg0 === arg) || (allPoolsArray[i].arg1 === arg)) {
+    for (let i=0; i < poolsArray.length; i++) {
+      if ((poolsArray[i].arg0 === arg) || (poolsArray[i].arg1 === arg)) {
 
-        let poolAddress = allPoolsArray[i].addr;
-        let vd = await getVelodromeApiData();
+        let poolAddress = poolsArray[i].addr;
         
         for(let i=0; i < vd.length; i++) {
 
@@ -545,7 +535,7 @@ module.exports = {
                 })
               .setThumbnail('attachment://buffer.png')
               .setTimestamp()
-              .setFooter({ text: 'Source: Velodrome API', iconURL: veloFooterIcon });
+              .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
 
               return msg.channel.send({ embeds: [embed], files: [att] });
           }
