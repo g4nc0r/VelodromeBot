@@ -35,16 +35,17 @@ client.on('messageCreate', msg => {
     msg.channel.send("Test message received");
   }
 
+  // return list of commands
   if (command === 'help') {
     dataFunctions.help(msg);
   }
 
-  // VELO price check
+  // return current VELO USD price
   if (command === 'price') {
     dataFunctions.getVeloUsdPrice(msg);
   }
 
-  // VELO market cap check
+  // return current VELO market cap from Coingecko
   if (command === 'marketcap') {
     dataFunctions.getMarketCap(msg);
   }
@@ -54,30 +55,12 @@ client.on('messageCreate', msg => {
     dataFunctions.getTotalSupply(msg);
   }
 
-  // check pool APR
-  if (command === 'apr') {
-
-    if (arg.length > 1) {
-      msg.reply('Please only provide one argument. Type !poollist to see options');
-      console.log('[*] !apr - User requested pool APR but used more than one argument');
-      return;
-    }
-
-    let selectedPool = arg[0];
-    dataFunctions.getPoolApr(msg, selectedPool);
-  }
-
-  if (command === 'top5') {
-    dataFunctions.getTopFiveApr(msg);
-  }
-  
-  // retrieve list of pools that can be used with !apr 
-  if (command === 'poollist') {
-    dataFunctions.getPoolList(msg);
-  }
-
-  // retrieve list of pools that contain a specified token
+  // return list of pools or pool containing a specified token
   if (command === 'pools') {
+
+    if (arg.length === 0) {
+      dataFunctions.getPoolList(msg);
+    }
 
     if (arg.length > 1) {
       msg.reply('Please only select one token.');
@@ -85,38 +68,59 @@ client.on('messageCreate', msg => {
       return;
     }
 
-    let selectedToken = arg[0];
-    dataFunctions.getTokenPoolList(msg, selectedToken);
+    if (arg.length === 1) {
+      let selectedToken = arg[0];
+      dataFunctions.getTokenPoolList(msg, selectedToken);
+
+    }
   }
 
-  // get list of sAMM stable pools
+  // return list of sAMM stable pools
   if (command === 'spools') {
     dataFunctions.getStablePoolList(msg);
   }
 
-  // get list of vAMM volatile pools
+  // return list of vAMM volatile pools
   if (command === 'vpools') {
     dataFunctions.getVolatilePoolList(msg);
   }
 
-  // get pool size info inc token amounts in a specified pool
-  if (command === 'poolsize') {
+  // return pool daily, weekly and yearly APR
+  if (command === 'apr') {
 
     if (arg.length > 1) {
-      msg.reply('Please only select one pool. Type !poollist to see options.');
+      msg.reply('Please only provide one argument. Type \`!poollist\` to see options');
+      console.log('[*] !apr - User requested pool APR but used more than one argument');
+      return;
+    }
+  
+    let selectedPool = arg[0];
+    dataFunctions.getPoolApr(msg, selectedPool);
+  }
+
+  /*// return top 5 pools by APR
+  if (command === 'top5') {
+    dataFunctions.getTopFiveApr(msg);
+  }*/
+  
+  // return total tokens and USD TVL value
+  if (command === 'tvl') {
+
+    if (arg.length > 1) {
+      msg.reply('Please only select one pool. Type \`!poollist\` to see options.');
       console.log('[*] !poolsize - User requested pool APR but used more than one argument');
       return;
     }
 
     let selectedPool = arg[0];
-    dataFunctions.getPoolSize(msg, selectedPool);
+    dataFunctions.getPoolUsdTvl(msg, selectedPool);
   }
 
-  // get pool apr and token sizes
+  // get pool APR and TVL
   if (command === 'pool') {
 
     if (arg.length > 1) {
-      msg.reply('Please only select one pool. Type !poollist to see options.');
+      msg.reply('Please only select one pool. Type \`!poollist\` to see options.');
       console.log('[*] !poolinfo - User requested pool APR but used more than one argument');
       return;
     }
@@ -125,7 +129,7 @@ client.on('messageCreate', msg => {
     dataFunctions.getPoolInfo(msg, selectedPool);
   }
 
-  // get velo info - price, marketcap, supply
+  // get velo stats - price, marketcap, supply
   if (command === 'velo') {
     dataFunctions.getVeloInfo(msg);
   }
@@ -133,3 +137,17 @@ client.on('messageCreate', msg => {
 
 // login to Discord
 client.login(process.env.TOKEN)
+
+// enable GET requests to ensure uptime
+const express = require('express')
+const app = express();
+const port = 3000;
+
+app.get('/', (req, res) => {
+  res.send('VelodromeBot Online')
+  console.log('\x1b[2m%s\x1b[0m', '[*] GET request received')
+});
+
+app.listen(port, () => {
+  console.log(`Listening on port ${port}`)
+});

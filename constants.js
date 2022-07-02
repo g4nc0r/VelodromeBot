@@ -27,27 +27,28 @@ const tokenColors = [
   {arg: 'aleth', color: '#f5c09a', id: 'alchemix'},
   {arg: 'alusd', color: '#f5c09a', id: 'alchemix-usd'},
   {arg: 'lusd', color: '#2eb6ea', id: 'liquity-usd'},
-  {arg: 'dola', color: '#6135db', id: 'dola-usd'},
+  {arg: 'dola', color: '#6135db', id: 'dola-usd'}
 ];
 
 const stables = ['usdc', 'usdt', 'frax', 'susd', 'alusd', 'dai', 'dola', 'lusd', 'mai'];
-const peggedExceptions = ['aleth', 'weth'];
+const peggedExceptions = ['aleth', 'weth', 'seth'];
 
 const helpList = '```' +
   `============================================\n` +
   `COMMAND           | DESCRIPTION\n` +
   `============================================\n` +
+  `!velo             | VELO info\n` +
   `!price            | VELO price\n` +
   `!marketcap        | VELO marketcap\n` +
   `!supply           | VELO, veVELO, %locked\n` +
-  `!apr <pool>       | Pool APR\n` +
-  `!poollist         | List of all pools\n` +
+  `!pools            | List of all pools\n` +
   `!pools <token>    | Pools contining <token>\n` +
-  `!poolsize <pool>  | Pool size\n` +
-  `!pool <pool>      | Pool APR and size\n` +
   `!spools           | List all sAMM pools\n` +
   `!vpools           | List all vAMM pools\n` +
-  `!top5             | Top 5 pools by APR\n` +
+  `!pool <pool>      | Pool APR and size\n` +
+  `!apr <pool>       | Pool APR\n` +
+  `!tvl <pool>       | Pool TVL info\n` +
+// `!top5             | Top 5 pools by APR\n` +
   '```';
 
 const staticIcons = {
@@ -56,6 +57,7 @@ const staticIcons = {
   coingeckoFooterIcon: 'https://static.coingecko.com/s/thumbnail-007177f3eca19695592f0b8b0eabbdae282b54154e1be912285c9034ea6cbaf2.png',
   dexscreenerFooterIcon: 'https://cdn-1.webcatalog.io/catalog/dex-screener/dex-screener-icon-filled.png',
   velodromeIcon: 'https://raw.githubusercontent.com/g4nc0r/VelodromeBot/main/static/velodrome.png',
+  velodromeIconSmall: 'https://raw.githubusercontent.com/g4nc0r/VelodromeBot/main/static/velodrome-sm.png',
   optimismIcon: 'https://raw.githubusercontent.com/g4nc0r/VelodromeBot/main/static/optimism.png'
 };
 
