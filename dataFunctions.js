@@ -16,7 +16,7 @@ const getVelodromeApiData = async () => {
   let veloData = await axios.get(urls.velodromeApiUrl);
   let vd = veloData.data.data;
   return vd;
-}
+};
 
 // retrieve thumbnail - defaults to Velodrome icon
 const getVeloThumbnail = async (arg) => {
@@ -37,7 +37,7 @@ const getVeloThumbnail = async (arg) => {
     }
   }
   return staticIcons.velodromeIcon;
-}
+};
 
 // return merged pool tokens icon thumbnail
 const getMergedThumbnail = async (arg0, arg1) => {
@@ -77,7 +77,7 @@ const getMergedThumbnail = async (arg0, arg1) => {
   let b64 = await mergeImages([ {src: token1Img, x: 40, y: 0}, {src: token0Img, x:0, y:0}], { width: 100, height: 55, Canvas: Canvas, Image: Image });
   let b64StrippedHeader = b64.split(';base64,').pop();
   return b64StrippedHeader;
-}
+};
 
 // get token color for embed
 const getTokenColor = async (arg) => {
@@ -90,79 +90,90 @@ const getTokenColor = async (arg) => {
       return tokenColor;
     }
   }
-}
+};
 
 // reset poolsArray and repopulate with latest pool info
-const getPools = async () => {
+const getPools = async (filter) => {
   
   let vd = await getVelodromeApiData();
   poolsArray = [];
 
-  await getStablePools(vd);
-  await getVolatilePools(vd);
+  await getStablePools(vd, filter);
+  await getVolatilePools(vd, filter);
 
   poolsArray = stablePoolsArray.concat(volatilePoolsArray);
 
   return vd;
-}
+};
 
 // get sAMM pools only
-const getStablePools = async (velodromeApiCall) => {
+const getStablePools = async (velodromeApiCall, filter) => {
   let vd = velodromeApiCall;
 
   stablePoolsArray = [];
   
   for (let i=0; i < vd.length; i++) {
-    if (vd[i].symbol.charAt(0) === 's') {
 
-      let token0 = vd[i].token0.symbol.toLowerCase();
-      let token1 = vd[i].token1.symbol.toLowerCase();
+    if (vd[i].isStable === true) {
 
-      if ((stables.includes(token0) && stables.includes(token1) ||
-        (peggedExceptions.includes(token0) && peggedExceptions.includes(token1)))
-      ) {
-        stablePoolsArray.push({
-          type: 'stable',
-          arg0: token0 + '/' + token1,
-          arg1: token1 + '/' + token0,
-          name: vd[i].symbol,
-          addr: vd[i].address
-        });
+      if (vd[i].tvl > filter) { 
+
+        let token0 = vd[i].token0.symbol.toLowerCase();
+        let token1 = vd[i].token1.symbol.toLowerCase();
+
+        if ((stables.includes(token0) && stables.includes(token1) ||
+          (peggedExceptions.includes(token0) && peggedExceptions.includes(token1)))
+        ) {
+          stablePoolsArray.push({
+            type: 'stable',
+            arg0: token0 + '/' + token1,
+            arg1: token1 + '/' + token0,
+            name: vd[i].symbol,
+            addr: vd[i].address,
+            tvl: vd[i].tvl,
+            apr: vd[i].apr
+          });
+        }
       }
     }
   }
-}
+};
 
 // get vAMM pools only
-const getVolatilePools = async (velodromeApiCall) => {
+const getVolatilePools = async (velodromeApiCall, filter) => {
   let vd = velodromeApiCall;
 
   volatilePoolsArray = [];
   
   for (let i=0; i < vd.length; i++) {
-    if (vd[i].symbol.charAt(0) === 'v') {
 
-      let token0 = vd[i].token0.symbol.toLowerCase();
-      let token1 = vd[i].token1.symbol.toLowerCase();
+    if (vd[i].isStable === false) {
 
-      if (!(stables.includes(token0) && stables.includes(token1)) &&
-      !((token0).includes('vamm-') || (token0).includes('samm-')) &&
-      !((token1).includes('vamm-') || (token1).includes('samm-')) &&
-      !(peggedExceptions.includes(token0) && peggedExceptions.includes(token1))
-      ) 
-      {
+      if (vd[i].tvl > filter) {
 
-        volatilePoolsArray.push({ 
-            type: 'volatile',
-            arg0: token0 + '/' + token1,
-            arg1: token1 + '/' + token0,
-            name: vd[i].symbol,
-            addr: vd[i].address
-        });
+        let token0 = vd[i].token0.symbol.toLowerCase();
+        let token1 = vd[i].token1.symbol.toLowerCase();
+
+        if (!(stables.includes(token0) && stables.includes(token1)) &&
+        !((token0).includes('vamm-') || (token0).includes('samm-')) &&
+        !((token1).includes('vamm-') || (token1).includes('samm-')) &&
+        !(peggedExceptions.includes(token0) && peggedExceptions.includes(token1))
+        ) 
+        {
+          volatilePoolsArray.push({ 
+              type: 'volatile',
+              arg0: token0 + '/' + token1,
+              arg1: token1 + '/' + token0,
+              name: vd[i].symbol,
+              addr: vd[i].address,
+              tvl: vd[i].tvl,
+              apr: vd[i].apr
+          });
+        }
       }
     }
   }
-}
+};
 
 module.exports = {
   // return list of commands
@@ -180,9 +191,9 @@ module.exports = {
 
     const embed = new Discord.MessageEmbed()
       .setTitle('🚴‍♂️ VELO Price')
-      .setColor(tokenColors[0].color)
-      .setDescription(`> **$${tokenPrice}**`)
+      .setColor('#007fff')
       .setThumbnail(await getVeloThumbnail())
+      .setDescription(`> **$${tokenPrice}**`)
       .setTimestamp()
       .setFooter({ text: 'Source: Dexscreener', iconURL: staticIcons.dexscreenerFooterIcon });
 
@@ -192,15 +203,15 @@ module.exports = {
   getMarketCap: async function(msg) {
 
     let tokenInfo = await axios.get(urls.veloCoingeckoUrl);
-    let fdv = (tokenInfo.data.market_data.fully_diluted_valuation.usd).toLocaleString("en", {}); 
-    
-    console.log('\x1b[32m%s\x1b[0m', `[$] !marketcap - User requested marketcap of VELO: $${fdv}`);
+    let fdv = (tokenInfo.data.market_data.fully_diluted_valuation.usd).toLocaleString('en-US', {}); 
 
+    console.log('\x1b[32m%s\x1b[0m', `[$] !marketcap - user requested marketcap of VELO: $${fdv}`);
+    
     const embed = new Discord.MessageEmbed()
-      .setTitle('🚵 VELO Marketcap')
-      .setColor(tokenColors[0].color)
-      .setDescription(`> **$${fdv}**`)
+      .setTitle('📈 VELO Marketcap')
+      .setColor('#8bc63f')
       .setThumbnail(await getVeloThumbnail())
+      .setDescription(`> **$${fdv}**`)
       .setTimestamp()
       .setFooter({ text: 'Source: Coingecko', iconURL: staticIcons.coingeckoFooterIcon })
 
@@ -208,34 +219,35 @@ module.exports = {
   },
   // return total supply of VELO, veVELO and % locked
   getTotalSupply: async function(msg) {
-    
+
     let { totalSupply, veTotalSupply, percentageLocked } = await onChainFunctions.getTotalSupply();
 
-    console.log('\x1b[34m%s\x1b[0m', `[*] !supply - user requested total supply.VELO: ${totalSupply.toFixed(2)} veVELO: ${veTotalSupply.toFixed(2)} %locked: ${percentageLocked}`);
-    
+    totalSupply = totalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0});
+    veTotalSupply = veTotalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    console.log('\x1b[32m%s\x1b[0m', `[$] !supply - user requested total supply - VELO: ${totalSupply} - veVELO: ${veTotalSupply} - LOCKED: ${percentageLocked}%`);
+
     const embed = new Discord.MessageEmbed()
-      .setTitle('🚵 VELO Supply')
-      .setColor(tokenColors[0].color)
-      .addFields(              
-        { name: 'Total Supply', value: 
-          `> 🚴🏻‍♂️ **VELO :**  ${totalSupply.toLocaleString('en', {})}\n` +
-          `> 🚴 **veVELO :**  ${veTotalSupply.toLocaleString('en', {})}\n` +
-          `> 🚴🏻‍♂️ **% Locked :** ${percentageLocked}%`
-        })
+      .setTitle('📊 VELO Supply')
+      .setColor('#fa051d')
       .setThumbnail(await getVeloThumbnail())
+      .setDescription(          
+        `> 🚴🏻‍♂️ **VELO :**  ${totalSupply}\n` +
+        `> 🚴 **veVELO :**  ${veTotalSupply}\n` +
+        `> 🚴🏻‍♂️ **% Locked :** ${percentageLocked}%`)
       .setFooter({ text: 'Source: Optimism', iconURL: staticIcons.opFooterIcon })
       .setTimestamp();
 
     return msg.channel.send({ embeds: [embed] })
   },
-  // return list of pools
+  // return list of pools with TVL > 5000
   getPoolList: async function(msg) {
 
-    await getPools();
+    console.log('\x1b[34m%s\x1b[0m', '[?] !pools - user called getPoolsList');    
+
+    await getPools(2000);
     let stablePoolList = [];
     let volatilePoolList = [];
-
-    console.log('\x1b[34m%s\x1b[0m', '[?] getPoolsList called');      
     
     for (i=0; i < stablePoolsArray.length; i++) {
       stablePoolList.push(stablePoolsArray[i].arg0);
@@ -245,52 +257,86 @@ module.exports = {
       volatilePoolList.push(volatilePoolsArray[i].arg0);
     }
     
-    let stablePoolListString = String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join("\n"));
-    let volatilePoolListString = String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join("\n"));
+    let stablePoolListString = String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join('\n'));
+    let volatilePoolListString = String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join('\n'));
+    
+    const embed = new Discord.MessageEmbed()
+      .setTitle('🚵 Pools List')
+      .setColor('#000000')
+      .addField('🚴 vAMM - Volatile Pools', '\`\`\`' + volatilePoolListString + '\`\`\`', true)
+      .addField('🚴‍♂️ sAMM - Stable Pools', '\`\`\`' + stablePoolListString + '\`\`\`', true);
+      
+    return msg.channel.send({ embeds: [embed] });
+  },
+  // return unfiltered list of pools
+  getAllPoolList: async function(msg) {
+
+    console.log('\x1b[34m%s\x1b[0m', '[?] !allpools - user called getAllPoolsList');      
+
+    await getPools(0);
+    let stablePoolList = [];
+    let volatilePoolList = [];
+   
+    for (i=0; i < stablePoolsArray.length; i++) {
+      stablePoolList.push(stablePoolsArray[i].arg0);
+    }
+
+    for (i=0; i < volatilePoolsArray.length; i++) {
+      volatilePoolList.push(volatilePoolsArray[i].arg0);
+    }
+    
+    let stablePoolListString = String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join('\n'));
+    let volatilePoolListString = String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join('\n'));
     
     const embed = new Discord.MessageEmbed()
       .setTitle('🚵 Pools List')
       .setColor('#4862d8')
-      .addField('🚴‍♂️ vAMM - Volatile Pools', '\`\`\`' + volatilePoolListString + '\`\`\`', true)
+      .addField('🚴 vAMM - Volatile Pools', '\`\`\`' + volatilePoolListString + '\`\`\`', true)
       .addField('🚴‍♂️ sAMM - Stable Pools', '\`\`\`' + stablePoolListString + '\`\`\`', true);
       
     return msg.channel.send({ embeds: [embed] });
   },
   // return list of sAMM stable pools
   getStablePoolList: async function(msg) {
+
+    console.log('\x1b[34m%s\x1b[0m', `[?] !spools - user called getStablePoolList`);
+
     let vd = await getVelodromeApiData();
     let stablePoolList = [];
 
-    await getStablePools(vd);
+    await getStablePools(vd, 0);
 
     for (i=0; i < stablePoolsArray.length; i++) {
       stablePoolList.push(stablePoolsArray[i].arg0);
     }
 
-    let stablePoolListString = String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join("\n"));
+    let stablePoolListString = String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join('\n'));
 
     const embed = new Discord.MessageEmbed()
-      .setColor('#4862d8')
+      .setColor('#4289c1')
       .addField('🚴‍♂️ sAMM - Stable Pools', '\`\`\`' + stablePoolListString + '\`\`\`', true);
 
     return msg.channel.send({ embeds: [embed] });
   },
   // return list of vAMM volatile pools
   getVolatilePoolList: async function(msg) {
+
+    console.log('\x1b[34m%s\x1b[0m', `[?] !vpools - user called getVolatilePoolList`);
+
     let vd = await getVelodromeApiData();
     let volatilePoolList = [];
 
-    await getVolatilePools(vd);
+    await getVolatilePools(vd, 0);
 
     for (i=0; i < volatilePoolsArray.length; i++) {
       volatilePoolList.push(volatilePoolsArray[i].arg0);
     }
 
-    let volatilePoolsListString = String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join("\n"));
+    let volatilePoolsListString = String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join('\n'));
 
     const embed = new Discord.MessageEmbed()
-      .setColor('#4be29d')
-      .addField('🚴‍♂️ vAMM - Volatile Pools', '\`\`\`' + volatilePoolsListString + '\`\`\`', true);
+      .setColor('#fa743e')
+      .addField('🚴 vAMM - Volatile Pools', '\`\`\`' + volatilePoolsListString + '\`\`\`', true);
 
     return msg.channel.send({ embeds: [embed] });
   },
@@ -301,9 +347,9 @@ module.exports = {
 
     let stablePoolList = [];
     let volatilePoolList = [];
-    await getPools();
+    await getPools(0);
     
-    console.log('\x1b[34m%s\x1b[0m', `[?] getTokenPoolList called - arg: ${arg}`);
+    console.log('\x1b[34m%s\x1b[0m', `[?] !pools - arg: ${arg.toUpperCase()} - user called getTokenPoolList}`);
 
     for (let i = 0; i < poolsArray.length; i++) {
       if (poolsArray[i].arg0.includes(arg) || poolsArray[i].arg1.includes(arg)) {
@@ -325,14 +371,12 @@ module.exports = {
         let stablePoolListString = '';
 
         if (stablePoolList.length !== 0) {
-          stablePoolListString = `sAMM - Stable Pools\n----------------------\n` + String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join("\n"));
+          stablePoolListString = `sAMM - Stable Pools\n----------------------\n` + String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join('\n'));
         }
 
         if (volatilePoolList.length !== 0) { 
-          volatilePoolListString = `\nvAMM - Volatile Pools\n----------------------\n` + String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join("\n"));
+          volatilePoolListString = `\nvAMM - Volatile Pools\n----------------------\n` + String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join('\n'));
         }
-
-
 
         const embed = new Discord.MessageEmbed()
           //.setTitle(`🚴‍♂️ ${arg.toUpperCase()} Pools`)
@@ -351,7 +395,7 @@ module.exports = {
 
     arg = arg.toLowerCase();
 
-    let vd = await getPools();
+    let vd = await getPools(0);
 
     let poolAddress;
    
@@ -368,7 +412,7 @@ module.exports = {
             let aprWeekly = (apr / 52).toFixed(2)
             let aprYearly = apr.toFixed(2);
 
-            console.log('\x1b[35m%s\x1b[0m', `[%] !apr ${arg} - user requested pool APR:  ${apr.toFixed(2)}%`)
+            console.log('\x1b[35m%s\x1b[0m', `[%] !apr - arg: ${arg.toUpperCase()} - user called getPoolApr - ${apr.toFixed(2)}%`)
 
             const img64 = await getMergedThumbnail(vd[i].token0.symbol.toLowerCase(), vd[i].token1.symbol.toLowerCase());
             const buffer = Buffer.from(img64, 'base64');
@@ -395,71 +439,170 @@ module.exports = {
     msg.reply(`Could not find ${arg}, for a list of pools type \`!poollist\``);
     return;
   },
-  // return top 5 pools by APR
-  /*getTopFiveApr: async function (msg) {
- 
-    let vd = await getPools();
+  // return top 5 pools by APR and TVL
+  getTopFive: async function(msg) {
 
-    let aprArray = [];
-    let returnObjectArray = [];
+    console.log('\x1b[35m%s\x1b[0m', '[*] !top5 - user called getTopFive');
 
-    for (let i=0; i < poolsArray.length; i++) {
-      for (let l=0; l < vd.length; l++) {
-        if (poolsArray[i].name.toLowerCase() === vd[l].symbol.toLowerCase()) {
-          aprArray.push(vd[i].apr)
-        }
-      }
-    }
+    await getPools(2000);
+
+    let poolAprs = [];
+    let topFiveListApr = [];
+    let topFiveAprString = '';
 
     for (let i=0; i < poolsArray.length; i++) {
-      for (let l=0; l < vd.length; l++) {
-        if (vd[l].address.toLowerCase() === poolsArray[i].addr.toLowerCase()) {
-          aprArray.push(vd[i].apr)
-        }
+      poolAprs.push(poolsArray[i].apr);
+    }
+
+    let topFiveApr = poolAprs.sort(function(a, b){return b-a}).slice(0,5);
+
+    for (let i=0; i < poolsArray.length; i++) {
+      if (topFiveApr.includes(poolsArray[i].apr)) {
+        topFiveListApr.push({
+          name: poolsArray[i].name,
+          aprDaily: poolsArray[i].apr / 365,
+          aprWeekly: poolsArray[i].apr / 52,
+          aprYearly: poolsArray[i].apr
+        });
       }
     }
 
-    let topFive = aprArray.sort(function(a, b){return b-a}).slice(0,5);
+    topFiveListApr.sort((a, b) => parseFloat(b.aprYearly) - parseFloat(a.aprYearly));
 
-    console.log(topFive);
-
-    for (let l=0; l < topFive.length; l++) {
-      for (let i=0; i < vd.length; i++) {
-        if (topFive[l] === vd[i].apr) {
-          returnObjectArray.push({
-            symbol: vd[i].symbol,
-            daily: vd[i].apr / 365,
-            weekly: vd[i].apr / 52,
-            yearly: vd[i].apr
-          })
-        }
-      }
-    } 
-
-    console.log(returnObjectArray)
-
-    let top5AprString = '';
-
-    for (key in returnObjectArray) {
-      top5AprString += '*' + (String(returnObjectArray[key].symbol) + '*\n**' + String(returnObjectArray[key].yearly.toFixed(2)) + '%**\n');
+    for (aprs in topFiveListApr) {
+      topFiveAprString += `> 🔹 *` + (topFiveListApr[aprs].name + ':* \t **' + 
+        topFiveListApr[aprs].aprYearly.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2}) + '%**\n'
+      );
     }
 
-    console.log(top5AprString);
+    let poolTvls = [];
+    let topFiveListTvl = [];
+    let topFiveTvlString = '';
+
+    for (let i=0; i < poolsArray.length; i++) {
+      poolTvls.push(poolsArray[i].tvl);
+    }
+
+    let topFiveTvl = poolTvls.sort(function(a, b){return b-a}).slice(0,5);
+
+    for (let i=0; i < poolsArray.length; i++) {
+      if (topFiveTvl.includes(poolsArray[i].tvl)) {
+        topFiveListTvl.push({
+          name: poolsArray[i].name,
+          tvl: poolsArray[i].tvl
+        })
+      }
+    }
+
+    topFiveListTvl.sort((a, b) => parseFloat(b.tvl) - parseFloat(a.tvl));
+
+    for (tvls in topFiveListTvl) {
+      topFiveTvlString += `> 🔸 *` + (topFiveListTvl[tvls].name + ':* \t **$' + topFiveListTvl[tvls].tvl.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0}) + '**\n');
+    }
 
     embed = new Discord.MessageEmbed()
-      .setTitle('🚵🏻‍♂️ Top 5')
-      .addField('Pools by APR', top5AprString, true)
+    .setTitle('🚵🏻‍♂️ Top 5')
+    .setColor('#000000')
+    .addField('☄️ Pools by APR', topFiveAprString, false)
+    .addField('🪙 Pools by TVL', topFiveTvlString, false)
+    .setThumbnail(await getVeloThumbnail())
+    .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
+
+    return msg.channel.send({ embeds: [embed] });
+
+  },
+  // return top 5 pools by APR
+  getTopFiveApr: async function (msg) {
+
+    console.log('\x1b[35m%s\x1b[0m', '[%] !top5 apr - user called getTopFiveApr');
+
+    await getPools(2000);
+
+    let poolAprs = [];
+    let topFiveList = [];
+    let topFiveAprString = '';
+
+    for (let i=0; i < poolsArray.length; i++) {
+      poolAprs.push(poolsArray[i].apr);
+    }
+
+    let topFiveApr = poolAprs.sort(function(a, b){return b-a}).slice(0,5);
+
+    for (let i=0; i < poolsArray.length; i++) {
+      if (topFiveApr.includes(poolsArray[i].apr)) {
+        topFiveList.push({
+          name: poolsArray[i].name,
+          aprDaily: poolsArray[i].apr / 365,
+          aprWeekly: poolsArray[i].apr / 52,
+          aprYearly: poolsArray[i].apr
+        });
+      }
+    }
+
+    topFiveList.sort((a, b) => parseFloat(b.aprYearly) - parseFloat(a.aprYearly));
+
+    for (aprs in topFiveList) {
+      topFiveAprString += `> 🔹 *` + (topFiveList[aprs].name + ':* \t **' + 
+        topFiveList[aprs].aprYearly.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2}) + '%**\n'
+      );
+    }
+
+    embed = new Discord.MessageEmbed()
+      .setTitle('☄️ Top 5')
+      .setColor('#55acee')
+      .addField('Pools by APR', topFiveAprString, true)
       .setThumbnail(await getVeloThumbnail())
       .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
 
     return msg.channel.send({ embeds: [embed] });
-  },*/
+  },
+  // return top5 pools by TVL
+  getTopFiveTvl: async function (msg) {
+
+    console.log('\x1b[35m%s\x1b[0m','[$] !top5 tvl - user called getTopFiveTvl');
+
+    await getPools(2000);
+
+    let poolTvls = [];
+    let topFiveList = [];
+    let topFiveTvlString = '';
+
+    for (let i=0; i < poolsArray.length; i++) {
+      poolTvls.push(poolsArray[i].tvl);
+    }
+
+    let topFiveTvl = poolTvls.sort(function(a, b){return b-a}).slice(0,5);
+
+    for (let i=0; i < poolsArray.length; i++) {
+      if (topFiveTvl.includes(poolsArray[i].tvl)) {
+        topFiveList.push({
+          name: poolsArray[i].name,
+          tvl: poolsArray[i].tvl
+        })
+      }
+    }
+
+    topFiveList.sort((a, b) => parseFloat(b.tvl) - parseFloat(a.tvl));
+
+    for (tvls in topFiveList) {
+      topFiveTvlString += `> 🔸 *` + (topFiveList[tvls].name + ':* \t **$' + topFiveList[tvls].tvl.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0}) + '**\n');
+    }
+
+    embed = new Discord.MessageEmbed()
+    .setTitle('🪙 Top 5')
+    .setColor('#f4900c')
+    .addField('Pools by TVL', topFiveTvlString, true)
+    .setThumbnail(await getVeloThumbnail())
+    .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
+
+    return msg.channel.send({ embeds: [embed] });
+  },
   // return total tokens and USD TVL value
   getPoolUsdTvl: async function (msg, arg) {
 
     arg = arg.toLowerCase();
 
-    let vd = await getPools();
+    let vd = await getPools(0);
 
         // get pool address
         for (let i=0; i < poolsArray.length; i++) {
@@ -507,7 +650,10 @@ module.exports = {
             let token0price = token0info.data.market_data.current_price.usd;
             let token1price = token1info.data.market_data.current_price.usd;
             
-            let poolUsdValue = ((reserve0 * token0price) + (reserve1 * token1price));
+            let poolUsdValue = ((reserve0 * token0price) + (reserve1 * token1price)).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0});
+
+
+            console.log('\x1b[35m%s\x1b[0m', `[*] !tvl - arg: ${arg.toUpperCase()} - user called getPoolUsdTvl - TVL: $${poolUsdValue}`);
 
             const img64 = await getMergedThumbnail(token0_symbol, token1_symbol);
             const buffer = Buffer.from(img64, 'base64');
@@ -516,16 +662,17 @@ module.exports = {
             const embed = new Discord.MessageEmbed()
             .setTitle(`${poolTitle} Pool Size`)
             .setColor(await getTokenColor(token0_symbol.toLowerCase()))
+            .setThumbnail('attachment://buffer.png')
             .addFields(
               { name: '🪙 TVL', value: 
               `> 🚴🏻‍♂️ **${token0_symbol.toUpperCase()} :**  ` + `${reserve0.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0})}\n` +
               `> 🚴 **${token1_symbol.toUpperCase()} :**  ` + `${reserve1.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0})}`
               })
-            .addField('💵 USD Value', `$${poolUsdValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0})}`)
-            .setThumbnail('attachment://buffer.png')
+            .addField('💵 USD Value', `> $${poolUsdValue}`)
             .setTimestamp()
+            .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
 
-            return msg.channel.send({ embeds: [embed], files: [att]  });
+            return msg.channel.send({ embeds: [embed], files: [att] });
             }
           }
   },
@@ -533,7 +680,7 @@ module.exports = {
   getPoolInfo: async function (msg, arg) {
     arg = arg.toLowerCase();
 
-    let vd = await getPools();
+    let vd = await getPools(0);
 
     // check if pool requested is valid
     for (let i=0; i < poolsArray.length; i++) {
@@ -576,9 +723,13 @@ module.exports = {
             let token0price = token0info.data.market_data.current_price.usd;
             let token1price = token1info.data.market_data.current_price.usd;
             
-            let poolUsdValue = ((reserve0 * token0price) + (reserve1 * token1price));
+            let poolUsdValue = ((reserve0 * token0price) + (reserve1 * token1price)).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-            console.log('\x1b[36m%s\x1b[0m', `[%] !apr ${arg} - user requested poolinfo - APR: ${apr.toFixed(2)}% ${token0_symbol}: ${reserve0.toFixed(2)} ${token1_symbol}: ${reserve1.toFixed(2)}`);
+            reserve0 = reserve0.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            reserve1 = reserve1.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+            console.log('\x1b[36m%s\x1b[0m', `[%] !pool - arg: ${arg.toUpperCase()} - user called getPoolInfo - APR: ${apr.toFixed(2)}% - ` +
+              `${token0_symbol.toUpperCase()}: ${reserve0} ${token1_symbol.toUpperCase()}: ${reserve1} - VALUE: $${poolUsdValue}`);
 
             const img64 = await getMergedThumbnail(token0_symbol, token1_symbol);
             const buffer = Buffer.from(img64, 'base64');
@@ -594,10 +745,10 @@ module.exports = {
                   '> 🔹 **' + aprYearly + '%**' + ' *yearly*'
                 },
                 { name: '🪙 TVL', value: 
-                  `> 🚴🏻‍♂️ **${token0_symbol.toUpperCase()} :**  ` + `${reserve0.toLocaleString("en", {})}\n` +
-                  `> 🚴 **${token1_symbol.toUpperCase()} :**  ` + `${reserve1.toLocaleString("en", {})}`
+                  `> 🚴🏻‍♂️ **${token0_symbol.toUpperCase()} :**  ` + `${reserve0}\n` +
+                  `> 🚴 **${token1_symbol.toUpperCase()} :**  ` + `${reserve1}`
                 },
-                { name: '💵 USD Value', value: `> $${poolUsdValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0})}`})
+                { name: '💵 USD Value', value: `> $${poolUsdValue}`})
               .setThumbnail('attachment://buffer.png')
               .setTimestamp()
               .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
@@ -612,35 +763,37 @@ module.exports = {
   },
   // get velo stats - price, marketcap, supply
   getVeloInfo: async function (msg) {
-    // to implement
     // token price
     let poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
     let tokenPrice = poolInfo.data.pairs[0].priceNative;
 
     // marketcap
     let tokenInfo = await axios.get(urls.veloCoingeckoUrl);
-    let fdv = (tokenInfo.data.market_data.fully_diluted_valuation.usd).toLocaleString("en", {}); 
+    let fdv = (tokenInfo.data.market_data.fully_diluted_valuation.usd).toLocaleString('en-US', {}); 
 
     // onchain supply info
     let { totalSupply, veTotalSupply, percentageLocked } = await onChainFunctions.getTotalSupply();
 
+    totalSupply = totalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    veTotalSupply = veTotalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    console.log('\x1b[36m%s\x1b[0m', `[*] !velo - user requested VELO info - PRCE: $${tokenPrice} - MARKETCAP: $${fdv} - SUPPLY: ${totalSupply})} veVELO: ${veTotalSupply} LOCKED: ${percentageLocked}%`);
+
     const embed = new Discord.MessageEmbed()
       .setTitle('VELO Stats')
-      .setColor(tokenColors[0].color)
+      .setColor('#007fff')
+      .setThumbnail(await getVeloThumbnail())
       .addField('💵 Price', `> $${tokenPrice}`)
       .addField('📈 Marketcap', `> $${fdv}`)
       .addFields(              
         { name: '📊 Total Supply', value: 
-          `> 🚴🏻‍♂️ **VELO :**  ${totalSupply.toLocaleString('en', {})}\n` +
-          `> 🚴 **veVELO :**  ${veTotalSupply.toLocaleString('en', {})}\n` +
+          `> 🚴🏻‍♂️ **VELO :**  ${totalSupply}\n` +
+          `> 🚴 **veVELO :**  ${veTotalSupply}\n` +
           `> 🚴🏻‍♂️ **% Locked :** ${percentageLocked}%`
         })
-      .setThumbnail(await getVeloThumbnail())
-      .setTimestamp();
+      .setTimestamp()
+      .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
 
     return msg.channel.send({ embeds: [embed] });
-  },
-  getEpoch: async function(msg) {
-    // to implement
   }
-}
+};

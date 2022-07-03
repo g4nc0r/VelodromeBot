@@ -16,14 +16,17 @@ client.on('ready', () => {
   });
 
   const testingChannel = client.channels.cache.get(process.env.TESTING_CHANNEL_ID);
-  testingChannel.send("🚴‍♂️ VelodromeBribeBot has booted up 🚴‍♂️");
+  testingChannel.send('🚴‍♂️ VelodromeBribeBot has booted up');
 })
 
-// prevent bot from replying to own messages
 client.on('messageCreate', msg => {
+  // prevent bot from replying to own messages
   if (msg.author.bot === client.user) return;
 
-  const prefix = "!";
+  // ignore any non-prefixed statements
+  const prefix = '!';
+  if (!msg.content.startsWith(prefix)) return;
+
   // removes ! prefix, trims any extra spaces, splits the string by one or many spaces
   const arg = msg.content.slice(prefix.length).trim().split(/ +/g);
   // remove one element from the array and return it. Command is returned, and args separated
@@ -31,8 +34,8 @@ client.on('messageCreate', msg => {
 
   // test message
   if (command === 'test') {
-    console.log('[*] Test message received');
-    msg.channel.send("Test message received");
+    console.log('\x1b[31m%s\x1b[0m', '[!] !test - test message received');
+    msg.channel.send('Test message received');
   }
 
   // return list of commands
@@ -55,7 +58,7 @@ client.on('messageCreate', msg => {
     dataFunctions.getTotalSupply(msg);
   }
 
-  // return list of pools or pool containing a specified token
+  // return pools filtered by TVL or pool containing a specified token
   if (command === 'pools') {
 
     if (arg.length === 0) {
@@ -64,15 +67,19 @@ client.on('messageCreate', msg => {
 
     if (arg.length > 1) {
       msg.reply('Please only select one token.');
-      console.log('[*] !pools - User tried to search for more than one token');
+      console.log('\x1b[31m%s\x1b[0m', '[*] !pools - User tried to search for more than one token');
       return;
     }
 
     if (arg.length === 1) {
       let selectedToken = arg[0];
       dataFunctions.getTokenPoolList(msg, selectedToken);
-
     }
+  }
+
+  // return unfiltered list of pools
+  if (command === 'allpools') {
+    dataFunctions.getAllPoolList(msg);
   }
 
   // return list of sAMM stable pools
@@ -89,8 +96,8 @@ client.on('messageCreate', msg => {
   if (command === 'apr') {
 
     if (arg.length > 1) {
-      msg.reply('Please only provide one argument. Type \`!poollist\` to see options');
-      console.log('[*] !apr - User requested pool APR but used more than one argument');
+      msg.reply('Please only provide one argument. Type \`!pools\` to see pools with >$2,000 TVL, or \`!allpools\` for all.');
+      console.log('\x1b[31m%s\x1b[0m', '[*] !apr - User requested pool APR but used more than one argument');
       return;
     }
   
@@ -98,17 +105,37 @@ client.on('messageCreate', msg => {
     dataFunctions.getPoolApr(msg, selectedPool);
   }
 
-  /*// return top 5 pools by APR
+  // return top 5 pools by APR or TVL
   if (command === 'top5') {
-    dataFunctions.getTopFiveApr(msg);
-  }*/
+    
+    if (arg[0] === 'apr') {
+      dataFunctions.getTopFiveApr(msg);
+    }
+
+    if (arg[0] === 'tvl') {
+      dataFunctions.getTopFiveTvl(msg);
+    }
+
+    if (arg.length === 0) {
+      //msg.reply('Please select either apr or tvl.');
+      //console.log('[*] !top5 - User did not specify arg');
+      dataFunctions.getTopFive(msg);
+      return;
+    }
+
+    if (arg.length > 1) {
+      msg.reply('Please select either apr or tvl.');
+      console.log('\x1b[31m%s\x1b[0m', '[*] !top5 - User provided more than one arg')
+      return;
+    }
+  }
   
   // return total tokens and USD TVL value
   if (command === 'tvl') {
 
     if (arg.length > 1) {
-      msg.reply('Please only select one pool. Type \`!poollist\` to see options.');
-      console.log('[*] !poolsize - User requested pool APR but used more than one argument');
+      msg.reply('Please only provide one argument. Type \`!pools\` to see pools with >$2,000 TVL, or \`!allpools\` for all.');
+      console.log('\x1b[31m%s\x1b[0m', '[*] !poolsize - User requested pool APR but used more than one argument');
       return;
     }
 
@@ -120,8 +147,8 @@ client.on('messageCreate', msg => {
   if (command === 'pool') {
 
     if (arg.length > 1) {
-      msg.reply('Please only select one pool. Type \`!poollist\` to see options.');
-      console.log('[*] !poolinfo - User requested pool APR but used more than one argument');
+      msg.reply('Please only provide one argument. Type \`!pools\` to see pools with >$2,000 TVL, or \`!allpools\` for all.');
+      console.log('\x1b[31m%s\x1b[0m', '[*] !poolinfo - User requested pool APR but used more than one argument');
       return;
     }
 
@@ -138,7 +165,7 @@ client.on('messageCreate', msg => {
 // login to Discord
 client.login(process.env.TOKEN)
 
-// enable GET requests to ensure uptime
+// enable GET requests to ping for uptime
 const express = require('express')
 const app = express();
 const port = 3000;
@@ -149,5 +176,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Listening on port ${port}`)
+  console.log('\x1b[2m%s\x1b[0m', `Listening on port ${port}`)
 });

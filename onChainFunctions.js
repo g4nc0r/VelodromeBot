@@ -9,10 +9,10 @@ const veloContract = new ethers.Contract(veloAddress, veloAbi, customHttpProvide
 
 const trim = (x) => {
   return x / 10 **18;
-}
+};
 
 module.exports = {
-  // return pool daily, weekly and yearly APR
+  // get total VELO, veVELO supply and return % locked
   getTotalSupply: async function (msg) {
     
     let totalSupply = await veloContract.totalSupply();
@@ -25,5 +25,5 @@ module.exports = {
 
     return { totalSupply, veTotalSupply, percentageLocked };
   }
-}
+};
 

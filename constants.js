@@ -48,7 +48,9 @@ const helpList = '```' +
   `!pool <pool>      | Pool APR and size\n` +
   `!apr <pool>       | Pool APR\n` +
   `!tvl <pool>       | Pool TVL info\n` +
-// `!top5             | Top 5 pools by APR\n` +
+  `!top5             | Top 5 pools APR & TVL\n` +
+  `!top5 apr         | Top 5 pools APR\n` +
+  `!top5 tvl         | Top5 pools TVL\n` +
   '```';
 
 const staticIcons = {
@@ -66,7 +68,7 @@ const urls = {
   veloCoingeckoUrl: 'http://api.coingecko.com/api/v3/coins/velodrome-finance',
   dexscreenerUrl: 'http://api.dexscreener.com/latest/dex/pairs/optimism/',
   velodromeApiUrl: 'https://api.velodrome.finance/api/v1/pairs'
-}
+};
 
 module.exports = {
   veloAddress: veloAddress,
