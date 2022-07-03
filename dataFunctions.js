@@ -436,7 +436,7 @@ module.exports = {
         }
       }
     } 
-    msg.reply(`Could not find ${arg}, for a list of pools type \`!poollist\``);
+    msg.reply(`Could not find ${arg}, for a list of pools type \`!pools\` to see pools with >$2,000 TVL, or \`!allpools\` for all.`);
     return;
   },
   // return top 5 pools by APR and TVL
@@ -758,7 +758,7 @@ module.exports = {
         } 
       } 
     }
-    msg.reply(`Could not find ${arg}, for a list of pools type \`!poollist\``);
+    msg.reply(`Could not find ${arg}, for a list of pools type \`!pools\` to see pools with >$2,000 TVL, or \`!allpools\` for all.`);
     return;
   },
   // get velo stats - price, marketcap, supply

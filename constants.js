@@ -41,8 +41,9 @@ const helpList = '```' +
   `!price            | VELO price\n` +
   `!marketcap        | VELO marketcap\n` +
   `!supply           | VELO, veVELO, %locked\n` +
-  `!pools            | List of all pools\n` +
+  `!pools            | Filtered list of pools\n` +
   `!pools <token>    | Pools contining <token>\n` +
+  `!allpools         | List of all pools\n` +
   `!spools           | List all sAMM pools\n` +
   `!vpools           | List all vAMM pools\n` +
   `!pool <pool>      | Pool APR and size\n` +
