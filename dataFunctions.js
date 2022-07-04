@@ -552,6 +552,7 @@ module.exports = {
       .setColor('#55acee')
       .addField('Pools by APR', topFiveAprString, true)
       .setThumbnail(await getVeloThumbnail())
+      .setTimestamp()
       .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
 
     return msg.channel.send({ embeds: [embed] });
@@ -593,6 +594,31 @@ module.exports = {
     .setColor('#f4900c')
     .addField('Pools by TVL', topFiveTvlString, true)
     .setThumbnail(await getVeloThumbnail())
+    .setTimestamp()
+    .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
+
+    return msg.channel.send({ embeds: [embed] });
+  },
+  // return total protocol TVL
+  getProtocolTvl: async function (msg) {
+    
+    let vd = await getVelodromeApiData();
+    let totalTvl = 0;
+    
+    for (let i=0; i < vd.length; i++) {
+      totalTvl += vd[i].tvl;
+    }
+
+    totalTvl = totalTvl.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0});
+
+    console.log('\x1b[32m%s\x1b[0m', `[$] !tvl - user requested total protocol TVL: $${totalTvl}`);
+
+    embed = new Discord.MessageEmbed()
+    .setTitle('🪙 Total TVL')
+    .setColor('#f4900c')
+    .setDescription(`> **$${totalTvl}**`)
+    .setThumbnail(await getVeloThumbnail())
+    .setTimestamp()
     .setFooter({ text: 'Source: Velodrome API', iconURL: staticIcons.veloFooterIcon });
 
     return msg.channel.send({ embeds: [embed] });

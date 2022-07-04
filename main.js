@@ -133,6 +133,11 @@ client.on('messageCreate', msg => {
   // return total tokens and USD TVL value
   if (command === 'tvl') {
 
+    if (arg.length === 0) {
+      dataFunctions.getProtocolTvl(msg);
+      return;
+    }
+
     if (arg.length > 1) {
       msg.reply('Please only provide one argument. Type \`!pools\` to see pools with >$2,000 TVL, or \`!allpools\` for all.');
       console.log('\x1b[31m%s\x1b[0m', '[*] !poolsize - User requested pool APR but used more than one argument');
@@ -159,6 +164,11 @@ client.on('messageCreate', msg => {
   // get velo stats - price, marketcap, supply
   if (command === 'velo') {
     dataFunctions.getVeloInfo(msg);
+  }
+
+  // Easter egg
+  if (command === 'weve') {
+    msg.channel.send('https://gfycat.com/courteousagilearachnid');
   }
 });
 

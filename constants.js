@@ -42,16 +42,17 @@ const helpList = '```' +
   `!marketcap        | VELO marketcap\n` +
   `!supply           | VELO, veVELO, %locked\n` +
   `!pools            | Filtered list of pools\n` +
-  `!pools <token>    | Pools contining <token>\n` +
+  `!pools <token>    | Pools containing <token>\n` +
   `!allpools         | List of all pools\n` +
   `!spools           | List all sAMM pools\n` +
   `!vpools           | List all vAMM pools\n` +
   `!pool <pool>      | Pool APR and size\n` +
   `!apr <pool>       | Pool APR\n` +
+  `!tvl              | Total protocol TVL\n` +
   `!tvl <pool>       | Pool TVL info\n` +
   `!top5             | Top 5 pools APR & TVL\n` +
   `!top5 apr         | Top 5 pools APR\n` +
-  `!top5 tvl         | Top5 pools TVL\n` +
+  `!top5 tvl         | Top 5 pools TVL\n` +
   '```';
 
 const staticIcons = {
