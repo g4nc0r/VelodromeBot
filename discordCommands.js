@@ -20,30 +20,55 @@ module.exports = {
   // return epoch info
   getEpoch: async function(msg) {
 
-    const options = { timeZone: 'UTC', timeZoneName: 'short'}
+    const options = { month: 'short', day: '2-digit', hour: '2-digit', year: 'numeric', timeZone: 'UTC', timeZoneName: 'short'}
 
-    const epochZero = new Date(1654124400000 - 604800000);
-    const epochOne = new Date(1654124400000);
+    let currentEmissions = 15000000;
+
+    const epochZero = new Date(1654128000000- 604800000);
+    const epochOne = new Date(1654128000000);
 
     const weeksPassed = (Date.now() - epochOne) / 604800000;
 
     const currentEpoch = Math.ceil(weeksPassed);
 
-    const currentEpochStart = new Date(((currentEpoch - 1) * 604800000) + 1654124400000);
-    const currentEpochEnd = new Date(((currentEpoch) * 604800000) + 1654124400000);
+    for (i=0; i < currentEpoch; i++) {
+      currentEmissions = currentEmissions * 0.99;
+    }
 
-    console.log(currentEpoch);
-    console.log(`Current epoch began on: ${currentEpochStart}`);
-    console.log(`Current epoch ends: ${currentEpochEnd.toLocaleString('en-GB', options)}`);
+    const currentEpochStart = new Date(((currentEpoch - 1) * 604800000) + 1654128000000);
+    const currentEpochEnd = new Date(((currentEpoch) * 604800000) + 1654128000000);
+
+    let bribeList = 
+      '> 🔹 **VELO/USDC** - 6,000 OP\n' +
+      '> 🔹 **VELO/OP** - 6,000 OP\n' +
+      '> 🔹 **OP/USDC** - 6,000 OP\n' +
+      '> 🔹 **OP/WETH** - 6,000 OP\n' +
+      '> 🔹 **sUSD/USDC** - 6,000 OP\n' +
+      '> 🔹 **sETH/WETH** - 1,500 OP, 825 SNX\n' +
+      '> 🔹 **wETH/USDC** - 6,000 OP\n' +
+      '> 🔹 **THALES-USDC** - 6,000 OP\n' +
+      '> 🔹 **AELIN/WETH** - 7,750 OP\n' +
+      '> 🔹 **L2DAO/OP** - 4,000 OP, 400,000 L2DAO'
 
     try {
       const embed = new Discord.MessageEmbed()
-        .setTitle(`Epoch ${currentEpoch}`)
-        .setThumbnail(await getVeloThumbnail())
+        .setTitle(`🌌 Epoch ${currentEpoch}`)
+        //.setThumbnail(await getVeloThumbnail())
+        .setColor('#4B0082')
         .setDescription(
-          `> **Epoch began:** ${currentEpochStart.toLocaleString('en', options)}\n` +
-          `> **Epoch ${currentEpoch+1} begins: **${currentEpochEnd.toLocaleString('en-GB', options)}`
+          `> **🌇 From:** ${currentEpochStart.toLocaleString('en-GB', options)}\n` +
+          `> **🌃 Ends:** ${currentEpochEnd.toLocaleString('en-GB', options)}\n`
         )
+        .addFields({
+          name: '💎 Bribes',
+          value: `${bribeList}`
+        })
+        .addFields({ 
+          name: '🚴 VELO Emissions',
+          value: 
+          `> 🔸 **Epoch ${currentEpoch}:** ${(currentEmissions).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0})}\n` +
+          `> 🔸 **Epoch ${currentEpoch+1}:** ${(currentEmissions*0.99).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0})}`
+        })
         .setTimestamp();
 
       return msg.channel.send({ embeds: [embed] });
@@ -100,8 +125,11 @@ module.exports = {
 
     let { totalSupply, veTotalSupply, percentageLocked } = await onChainFunctions.getTotalSupply();
 
+    let circulatingSupply = totalSupply - veTotalSupply;
+
     totalSupply = totalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0});
     veTotalSupply = veTotalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    circulatingSupply = circulatingSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
     console.log('\x1b[32m%s\x1b[0m', `[$] !supply - user requested total supply - VELO: ${totalSupply} - veVELO: ${veTotalSupply} - LOCKED: ${percentageLocked}%`);
 
@@ -113,7 +141,9 @@ module.exports = {
         .setDescription(          
           `> 🚴🏻‍♂️ **VELO :**  ${totalSupply}\n` +
           `> 🔒 **VELO:**  ${veTotalSupply}\n` +
-          `> 🚴🏻‍♂️ **% Locked :** ${percentageLocked}%`)
+          `> 🟢 **Circ. Supply:** ${circulatingSupply}\n` +
+          `> 🚴🏻‍♂️ **% Locked :** ${percentageLocked}%`
+          )
         .setFooter({ text: 'Optimism', iconURL: staticIcons.opFooterIcon })
         .setTimestamp();
 
@@ -517,11 +547,19 @@ module.exports = {
       );
     }
 
+    let poolTypeTitle = '';
+
+    if (poolType === 'stable') {
+      poolTypeTitle = 'Stable'
+    } else if (poolType === 'volatile') {
+      poolTypeTitle = 'Volatile'
+    }
+
     try {
       embed = new Discord.MessageEmbed()
         .setTitle(`☄️ Top ${top}`)
         .setColor('#55acee')
-        .addField('Pools by APR', topAprString, true)
+        .addField(`${poolTypeTitle} Pools by APR`, topAprString, true)
         .setThumbnail(await getVeloThumbnail())
         .setTimestamp()
         .setFooter({ text: 'Velodrome API', iconURL: staticIcons.veloFooterIcon });
@@ -543,11 +581,19 @@ module.exports = {
       topTvlString += `> 🔸 *` + (topList[tvls].name + ':* \t **$' + topList[tvls].tvl.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0}) + '**\n');
     }
 
+    let poolTypeTitle = '';
+
+    if (poolType === 'stable') {
+      poolTypeTitle = 'Stable'
+    } else if (poolType === 'volatile') {
+      poolTypeTitle = 'Volatile'
+    }
+
     try {
       embed = new Discord.MessageEmbed()
       .setTitle(`🪙 Top ${top}`)
       .setColor('#f4900c')
-      .addField('Pools by TVL', topTvlString, true)
+      .addField(`${poolTypeTitle} Pools by TVL`, topTvlString, true)
       .setThumbnail(await getVeloThumbnail())
       .setTimestamp()
       .setFooter({ text: 'Velodrome API', iconURL: staticIcons.veloFooterIcon });
@@ -785,14 +831,15 @@ module.exports = {
     marketCapTvlRatio = marketCapTvlRatio.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     fdv = fdv.toLocaleString('en-US', {});
 
+    let circulatingSupply = totalSupply - veTotalSupply;
+
     totalSupply = totalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     veTotalSupply = veTotalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     totalVotes = totalVotes.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     avgLockTime = avgLockTime.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    
+    circulatingSupply = circulatingSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-    console.log('\x1b[36m%s\x1b[0m', `[*] !velo - user requested VELO info - PRCE: $${tokenPrice} - MARKETCAP: $${fdv} - SUPPLY: ${totalSupply})} 
-      LOCKED VELO: ${veTotalSupply} LOCKED: ${percentageLocked}% VOTES: ${totalVotes} AVG LOCK TIME: ${avgLockTime}`);
+    console.log('\x1b[36m%s\x1b[0m', `[*] !velo - user requested VELO info - PRCE: $${tokenPrice} - MARKETCAP: $${fdv} - SUPPLY: ${totalSupply} LOCKED VELO: ${veTotalSupply} LOCKED: ${percentageLocked}% VOTES: ${totalVotes} AVG LOCK TIME: ${avgLockTime}`);
 
     try {
       const embed = new Discord.MessageEmbed()
@@ -806,6 +853,7 @@ module.exports = {
           { name: '📊 Total Supply', value: 
             `> 🚴🏻‍♂️ **VELO:**  ${totalSupply}\n` +
             `> 🔒 **VELO:**  ${veTotalSupply}\n` +
+            `> 🟢 **Circ. Supply:** ${circulatingSupply}\n` +
             `> 🚴 **% Locked:** ${percentageLocked}%`
           })
         .addField('🗳️ Votes', `> ${totalVotes}`)
@@ -920,4 +968,3 @@ module.exports = {
     }
   }
 };
-
