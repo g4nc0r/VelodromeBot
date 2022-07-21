@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 require('log-timestamp');
 require('dotenv').config();
 
-const dataFunctions = require('./dataFunctions.js');
+const discordCommands = require('./discordCommands.js');
 
 // Discord client instance
 const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES] });
@@ -17,7 +17,7 @@ client.on('ready', () => {
 
   const testingChannel = client.channels.cache.get(process.env.TESTING_CHANNEL_ID);
   testingChannel.send('🚴‍♂️ VelodromeBribeBot has booted up');
-})
+});
 
 client.on('messageCreate', msg => {
   // prevent bot from replying to own messages
@@ -40,29 +40,34 @@ client.on('messageCreate', msg => {
 
   // return list of commands
   if (command === 'help') {
-    dataFunctions.help(msg);
+    discordCommands.help(msg);
+  }
+
+  // return epoch info
+  if (command === 'epoch') {
+    discordCommands.getEpoch(msg);
   }
 
   // return current VELO USD price
   if (command === 'price') {
-    dataFunctions.getVeloUsdPrice(msg);
+    discordCommands.getVeloUsdPrice(msg);
   }
 
   // return current VELO market cap from Coingecko
   if (command === 'marketcap') {
-    dataFunctions.getMarketCap(msg);
+    discordCommands.getMarketCap(msg);
   }
 
   // get total VELO, veVELO supply and return % locked
   if (command === 'supply') {
-    dataFunctions.getTotalSupply(msg);
+    discordCommands.getTotalSupply(msg);
   }
 
   // return pools filtered by TVL or pool containing a specified token
   if (command === 'pools') {
 
     if (arg.length === 0) {
-      dataFunctions.getPoolList(msg);
+      discordCommands.getPoolList(msg);
     }
 
     if (arg.length > 1) {
@@ -73,23 +78,23 @@ client.on('messageCreate', msg => {
 
     if (arg.length === 1) {
       let selectedToken = arg[0];
-      dataFunctions.getTokenPoolList(msg, selectedToken);
+      discordCommands.getTokenPoolList(msg, selectedToken);
     }
   }
 
   // return unfiltered list of pools
   if (command === 'allpools') {
-    dataFunctions.getAllPoolList(msg);
+    discordCommands.getAllPoolList(msg);
   }
 
   // return list of sAMM stable pools
   if (command === 'spools') {
-    dataFunctions.getStablePoolList(msg);
+    discordCommands.getStablePoolList(msg);
   }
 
   // return list of vAMM volatile pools
   if (command === 'vpools') {
-    dataFunctions.getVolatilePoolList(msg);
+    discordCommands.getVolatilePoolList(msg);
   }
 
   // return pool daily, weekly and yearly APR
@@ -102,39 +107,188 @@ client.on('messageCreate', msg => {
     }
   
     let selectedPool = arg[0];
-    dataFunctions.getPoolApr(msg, selectedPool);
+    discordCommands.getPoolApr(msg, selectedPool);
   }
 
   // return top 5 pools by APR or TVL
   if (command === 'top5') {
-    
-    if (arg[0] === 'apr') {
-      dataFunctions.getTopFiveApr(msg);
-    }
-
-    if (arg[0] === 'tvl') {
-      dataFunctions.getTopFiveTvl(msg);
-    }
 
     if (arg.length === 0) {
-      //msg.reply('Please select either apr or tvl.');
-      //console.log('[*] !top5 - User did not specify arg');
-      dataFunctions.getTopFive(msg);
+      discordCommands.getTopFive(msg);
       return;
     }
 
-    if (arg.length > 1) {
-      msg.reply('Please select either apr or tvl.');
+    if ((arg[0].toLowerCase() === 'apr') || (arg[0].toLowerCase() === 'apy')) {
+
+      if (arg.length > 1) {
+        if (arg[1].toLowerCase() === 'stable') {
+          discordCommands.getTopApr(5, msg, false, 'stable');
+          return;
+        }
+
+        if (arg[1].toLowerCase() === 'volatile') {
+          discordCommands.getTopApr(5, msg, false, 'volatile');
+          return;
+        }
+      }
+      
+      discordCommands.getTopApr(5, msg, false, null);
+      return;
+    }
+
+    if ((arg[0].toLowerCase() === 'unapr') || (arg[0].toLowerCase() === 'unapy')) {
+      discordCommands.getTopApr(5, msg, true);
+      return;
+    }
+
+    if (arg[0].toLowerCase() === 'tvl') {
+
+      if (arg.length > 1) {
+        if (arg[1].toLowerCase() === 'stable') {
+
+          discordCommands.getTopTvl(5, msg, 'stable')
+          return;
+
+        } else if (arg[1].toLowerCase() === 'volatile') {
+
+          discordCommands.getTopTvl(5, msg, 'volatile')
+          return;
+
+        }
+      }
+
+      discordCommands.getTopTvl(5, msg, null);
+      return;
+    }
+    
+    if (arg.length > 3) {
+      msg.reply('Too many arguments.');
       console.log('\x1b[31m%s\x1b[0m', '[*] !top5 - User provided more than one arg')
       return;
     }
   }
-  
+
+  // return top 10 pools by TVL
+  if (command === 'top10') {
+
+    if (arg.length === 0) {
+      discordCommands.getTopTen(msg);
+      return;
+    }
+
+    if ((arg[0].toLowerCase() === 'apr') || (arg[0].toLowerCase() === 'apy')) {
+
+      if (arg.length > 1) {
+        if (arg[1].toLowerCase() === 'stable') {
+          discordCommands.getTopApr(10, msg, false, 'stable');
+          return;
+        }
+
+        if (arg[1].toLowerCase() === 'volatile') {
+          discordCommands.getTopApr(10, msg, false, 'volatile');
+          return;
+        }
+      }
+
+      discordCommands.getTopApr(10, msg, false);
+      return;
+    }
+
+    if ((arg[0].toLowerCase() === 'unapr') || (arg[0].toLowerCase() === 'unapy')) {
+      discordCommands.getTopApr(10, msg, true);
+      return;
+    }
+
+    if (arg[0].toLowerCase() === 'tvl') {
+
+      if (arg.length > 1) {
+        if (arg[1].toLowerCase() === 'stable') {
+
+          discordCommands.getTopTvl(10, msg, 'stable');
+          return;
+
+        } else if (arg[1].toLowerCase() === 'volatile') {
+
+          discordCommands.getTopTvl(10, msg, 'volatile');
+          return;
+
+        }
+      }
+      
+      discordCommands.getTopTvl(10, msg, null);
+      return;
+    }
+
+    if (arg.length > 3) {
+      msg.reply('Too many arguments.');
+      console.log('\x1b[31m%s\x1b[0m', '[*] !top10 - User provided more than one arg');
+      return;
+    }
+  }
+
+  // return top 25 pools by TVL
+  if (command === 'top25') {
+
+    if (arg.length === 0) {
+      msg.reply('With the `\!top25`\ command please specify apr or tvl.');
+      return;
+    }
+
+    if ((arg[0].toLowerCase() === 'apr') || (arg[0].toLowerCase() === 'apy')) {
+
+      if (arg.length > 1) {
+        if (arg[1].toLowerCase() === 'stable') {
+          discordCommands.getTopApr(25, msg, false, 'stable');
+          return;
+        }
+
+        if (arg[1].toLowerCase() === 'volatile') {
+          discordCommands.getTopApr(25, msg, false, 'volatile');
+          return;
+        }
+      }
+
+      discordCommands.getTopApr(25, msg, false);
+      return;
+    }
+
+    if ((arg[0].toLowerCase() === 'unapr') || (arg[0].toLowerCase() === 'unapy')) {
+      discordCommands.getTopApr(25, msg, true);
+      return;
+    }
+
+    if (arg[0].toLowerCase() === 'tvl') {
+
+      if (arg.length > 1) {
+        if (arg[1].toLowerCase() === 'stable') {
+
+          discordCommands.getTopTvl(25, msg, 'stable');
+          return;
+
+        } else if (arg[1].toLowerCase() === 'volatile') {
+
+          discordCommands.getTopTvl(25, msg, 'volatile');
+          return;
+
+        }
+      }
+      
+      discordCommands.getTopTvl(25, msg, null);
+      return;
+    }
+
+    if (arg.length > 3) {
+      msg.reply('Too many arguments.');
+      console.log('\x1b[31m%s\x1b[0m', '[*] !top25 - User provided more than one arg');
+      return;
+    }
+  }
+
   // return total tokens and USD TVL value
   if (command === 'tvl') {
 
     if (arg.length === 0) {
-      dataFunctions.getProtocolTvl(msg);
+      discordCommands.getProtocolTvl(msg);
       return;
     }
 
@@ -145,7 +299,7 @@ client.on('messageCreate', msg => {
     }
 
     let selectedPool = arg[0];
-    dataFunctions.getPoolUsdTvl(msg, selectedPool);
+    discordCommands.getPoolUsdTvl(msg, selectedPool);
   }
 
   // get pool APR and TVL
@@ -158,18 +312,28 @@ client.on('messageCreate', msg => {
     }
 
     let selectedPool = arg[0];
-    dataFunctions.getPoolInfo(msg, selectedPool);
+    discordCommands.getPoolInfo(msg, selectedPool);
   }
 
   // get velo stats - price, marketcap, supply
   if (command === 'velo') {
-    dataFunctions.getVeloInfo(msg);
+    discordCommands.getVeloInfo(msg);
+  }
+
+  if (command === 'volume') {
+    discordCommands.getDailyVolume();
   }
 
   // Easter egg
   if (command === 'weve') {
     msg.channel.send('https://gfycat.com/courteousagilearachnid');
   }
+
+  if (command === 'file') {
+    file = 'tvl.txt';
+    discordCommands.getFileData(msg, file)
+  }
+
 });
 
 // login to Discord
@@ -184,7 +348,17 @@ app.get('/', (req, res) => {
   res.send('VelodromeBot Online')
   console.log('\x1b[2m%s\x1b[0m', '[*] GET request received')
 });
-
 app.listen(port, () => {
   console.log('\x1b[2m%s\x1b[0m', `Listening on port ${port}`)
+});
+
+// cron jobs for daily tweets
+const cron = require('node-cron');
+
+cron.schedule('0 0 * * * ', function() {
+  console.log('\x1b[31m%s\x1b[0m', '[*] cron job initiated');
+  discordCommands.tweetTopFiveTvl();
+  discordCommands.tweetTopFiveApr();
+  discordCommands.tweetTopFiveApr('stable');
+  discordCommands.tweetProtocolTvl();
 });

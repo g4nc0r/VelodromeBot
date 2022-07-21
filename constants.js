@@ -27,11 +27,22 @@ const tokenColors = [
   {arg: 'aleth', color: '#f5c09a', id: 'alchemix'},
   {arg: 'alusd', color: '#f5c09a', id: 'alchemix-usd'},
   {arg: 'lusd', color: '#2eb6ea', id: 'liquity-usd'},
-  {arg: 'dola', color: '#6135db', id: 'dola-usd'}
+  {arg: 'dola', color: '#6135db', id: 'dola-usd'},
+  {arg: 'wbtc', color: '#f1ece2', id: 'wrapped-bitcoin'},
+  {arg: 'renbtc', color: '#f7931b', id: 'renbtc'},
+  {arg: 'sbtc', color: '#f7931b', id: 'sbtc'},
+  {arg: 'krom', color: '#b1d2ff', id: 'kromatika'},
+  {arg: 'mim', color: '#9796f8', id: 'magic-internet-money'},
+  {arg: 'aelin', color: '#0e0d2d', id: 'aelin'},
+  {arg: 'l2dao', color: '#3cedfc', id: 'layer2dao'},
+  {arg: 'df', color: '#c1a863', id: 'dforce-token'},
+  {arg: 'usx', color: '#f49900', id: 'token-dforce-usd'},
+  {arg: 'stg', color: '#000000', id: 'stargate-finance'},
+  {arg: 'rai', color: '#21c9a9', id: 'rai'}
 ];
 
-const stables = ['usdc', 'usdt', 'frax', 'susd', 'alusd', 'dai', 'dola', 'lusd', 'mai'];
-const peggedExceptions = ['aleth', 'weth', 'seth'];
+const stables = ['usdc', 'usdt', 'frax', 'susd', 'alusd', 'dai', 'dola', 'lusd', 'mai', 'mim', 'usx'];
+const peggedExceptions = ['aleth', 'weth', 'seth', 'wbtc', 'renbtc'];
 
 const helpList = '```' +
   `============================================\n` +
@@ -50,9 +61,11 @@ const helpList = '```' +
   `!apr <pool>       | Pool APR\n` +
   `!tvl              | Total protocol TVL\n` +
   `!tvl <pool>       | Pool TVL info\n` +
-  `!top5             | Top 5 pools APR & TVL\n` +
-  `!top5 apr         | Top 5 pools APR\n` +
-  `!top5 tvl         | Top 5 pools TVL\n` +
+  `!top[5/10]        | Top [5/10] by APR & TVL\n` +
+  `!top[5/10/25] apr | Top [5/10/25] by APR\n` +
+  `!top[5/10/25] tvl | Top [5/10/25] by TVL\n` +
+  `!top[5/10/25 unapr| Top [5/10/25 unfiltered\n` +
+  `stable / volatile | Use with top[5/10/25]` +
   '```';
 
 const staticIcons = {
