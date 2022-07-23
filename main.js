@@ -320,18 +320,29 @@ client.on('messageCreate', msg => {
     discordCommands.getVeloInfo(msg);
   }
 
+  // to implement
   if (command === 'volume') {
     discordCommands.getDailyVolume();
+  }
+
+  // return specified veNFT info
+  if (command === 'venft') {
+    if (arg.length === 0) {
+      msg.reply('Please specify the veNFT number.');
+      return;
+    }
+
+    if (arg.length > 1) {
+      msg.reply('Please specify one veNFT number.');
+    }
+
+    let selectedVeNft = arg[0];
+    discordCommands.getVeNftInfo(msg, selectedVeNft);
   }
 
   // Easter egg
   if (command === 'weve') {
     msg.channel.send('https://gfycat.com/courteousagilearachnid');
-  }
-
-  if (command === 'file') {
-    file = 'tvl.txt';
-    discordCommands.getFileData(msg, file)
   }
 
 });

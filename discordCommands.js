@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 const { typeOf } = require('mathjs');
 const Math = require('mathjs')
 
-const { veloUsdcPoolAddress, tokenColors, helpList, staticIcons, urls } = require('./constants.js');
+const { veloUsdcPoolAddress, tokenColors, helpList, staticIcons, urls, veNftAddress } = require('./constants.js');
 
 const { getVelodromeApiData, getVeloThumbnail, getMergedThumbnail, getTokenColor, getPools, getStablePools, 
   getVolatilePools, getAllPoolsLists, getTotalTvl, topTvl, topApr, readFileData, writeFileData } = require('./dataFunctions.js');
@@ -870,6 +870,70 @@ module.exports = {
   getDailyVolume: async function(msg) {
     // to implement
     onChainFunctions.getDailyVolume();
+  },
+  // get specified veNFT info
+  getVeNftInfo: async function(msg, selectedVeNft) {
+    
+    try {
+      let { owner, lockedAmount, balanceOfNft, lockEndDate, voted, votePowerPecentage } = await onChainFunctions.getVeNft(selectedVeNft);
+
+      let votedSymbol = '';
+
+      let poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
+      let tokenPrice = poolInfo.data.pairs[0].priceNative;
+  
+      let estimatedVeNftValue = (lockedAmount * tokenPrice).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); 
+  
+      lockedAmount = Number(lockedAmount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      balanceOfNft = balanceOfNft.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      votePowerPecentage = votePowerPecentage.toLocaleString('en-US', {minimumFractionDigits: 5, maximumFractionDigits: 5})
+  
+      const options = { month: 'short', day: 'numeric', year: 'numeric'}
+  
+      if (voted) {
+        votedSymbol = '✅'
+      } else {
+        votedSymbol = '❌'
+      }
+  
+      console.log(typeOf(lockedAmount))
+  
+      try {
+        const embed = new Discord.MessageEmbed()
+        .setTitle(`veNFT ${selectedVeNft}`)
+        .setColor('#000000')
+        .addFields(
+          { name: '🪙 veNFT', value:
+            '> **🔒 VELO:** ' + lockedAmount + '\n' +
+            '> **🚴🏻‍♂️ veVELO:** ' + balanceOfNft
+          },
+          { name: '💵 Est. USD Value', value: `> $${estimatedVeNftValue}`},
+          { name: '⌛ Lock', value: 
+            `> **End:** ` + lockEndDate.toLocaleDateString('en-GB', options)
+          },
+          { name: '🗳️ Vote' , value: 
+            `> 🔹 **% Vote:** ` + votePowerPecentage + '%' + '\n' + 
+            `> 🔹 **Voted Last Epoch:** ` + votedSymbol 
+          },
+          { name: '**Links**', value: 
+            `> 🔹 **Owner: ** [${owner.substring(0, 2) + '...' + owner.substring(38)}](https://optimistic.etherscan.io/${owner}) \n` +
+            `> 🔹 **Offer: **[Quxotic](https://quixotic.io/asset/${veNftAddress}/${selectedVeNft})`
+          })
+        .setThumbnail(await getVeloThumbnail('veNft'))
+        .setTimestamp()
+        .setFooter({ text: 'Optimism', iconURL: staticIcons.opFooterIcon })
+  
+        return msg.channel.send({ embeds: [embed] });
+  
+      } catch (e) {
+        console.log(e);
+      }
+
+    } catch (e) {
+      console.log('Could not find veNFT');
+      msg.reply('Could not find veNFT.');
+      return;
+    }
   },
   // tweet total protocol TVL
   tweetProtocolTvl: async function() {

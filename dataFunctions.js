@@ -21,11 +21,19 @@ const getVeloThumbnail = async (arg) => {
     return staticIcons.optimismIcon;
   }
 
+  if (arg === 'veNft') {
+    return staticIcons.veNftIcon;
+  }
+
   for (let i=0; i < tokenColors.length; i++) {
     if (tokenColors[i].arg === arg) {
       let tokenUrl = urls.coingeckoUrl + tokenColors[i].id;
-      let tokenInfo = await axios.get(tokenUrl);
-      return tokenInfo.data.image.small;
+      try {
+        let tokenInfo = await axios.get(tokenUrl);
+        return tokenInfo.data.image.small;
+      } catch (e) {
+        console.log(e);
+      }
     }
   }
   return staticIcons.velodromeIcon;
@@ -247,20 +255,16 @@ const topApr = async (top, filter, poolType) => {
     }
 
     if (poolType === 'stable') {
-      
       let vd = await getVelodromeApiData();
       poolsArray = await getStablePools(vd, filterThreshold);
 
     } else if (poolType === 'volatile') {
-    
       let vd = await getVelodromeApiData();
       poolsArray = await getVolatilePools(vd, filterThreshold);
-    
-    } else {
 
+    } else {
       const getPoolsReturn = await getPools(filterThreshold);
       poolsArray = getPoolsReturn;
-    
     }
 
     let poolAprs = [];
@@ -286,6 +290,7 @@ const topApr = async (top, filter, poolType) => {
     return topFiveList.sort((a, b) => parseFloat(b.aprYearly) - parseFloat(a.aprYearly));
 };
 
+// read data from specified file
 const readFileData = async (fileName) => {
 
   const fs = require('fs');
@@ -298,6 +303,7 @@ const readFileData = async (fileName) => {
   return data;
 };
 
+// write data to specified file
 const writeFileData = async (fileName, content) => {
 
   const fs = require('fs');

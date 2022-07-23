@@ -37,7 +37,42 @@ module.exports = {
     totalVotes = trim(totalVotes);
 
     return totalVotes;   
-  }
+  },
+  getVeNft: async function(veNftId) {
+
+    let veNftContract = new ethers.Contract(veNftAddress, veNftAbi, customHttpProvider);
+
+    console.log(await veNftContract.locked(veNftId));
+
+    const owner = await veNftContract.ownerOf(veNftId);
+
+    if (owner === '0x0000000000000000000000000000000000000000') {
+      return;
+    } else {
+
+      let lockedData = await veNftContract.locked(veNftId);
+      let balanceOfNft = await veNftContract.balanceOfNFT(veNftId);
+      const voted = await veNftContract.voted(veNftId);
+
+      const votePowerPecentage = (balanceOfNft / (await veNftContract.totalSupply()) * 100);
+
+      balanceOfNft = trim(balanceOfNft);
+      
+      const lockEnd = ethers.utils.formatUnits(lockedData.end, 0);
+      const lockEndDate = new Date(Number(lockEnd)*1000);
+      let lockedAmount = ethers.utils.formatEther(lockedData.amount);
+
+      console.log('Owner: ' + owner);
+      console.log('Lock Amount: ' + lockedAmount);
+      console.log('Balance: ' + balanceOfNft);
+      console.log('Lock End: ' + lockEndDate);
+      console.log('Voted: ' + voted);
+      console.log('Vote Power %: ' + votePowerPecentage);
+
+      return { owner, lockedAmount, balanceOfNft, lockEndDate, voted, votePowerPecentage }
+
+    }
+  },
   /*getDailyVolume: async function (msg) {
     
     // require pair address

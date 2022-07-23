@@ -38,7 +38,8 @@ const tokenColors = [
   {arg: 'df', color: '#c1a863', id: 'dforce-token'},
   {arg: 'usx', color: '#f49900', id: 'token-dforce-usd'},
   {arg: 'stg', color: '#000000', id: 'stargate-finance'},
-  {arg: 'rai', color: '#21c9a9', id: 'rai'}
+  {arg: 'rai', color: '#21c9a9', id: 'rai'},
+  {arg: 'ageur', color: '#ccc4a1', id: 'ageur'}
 ];
 
 const stables = ['usdc', 'usdt', 'frax', 'susd', 'alusd', 'dai', 'dola', 'lusd', 'mai', 'mim', 'usx'];
