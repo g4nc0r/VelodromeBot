@@ -801,23 +801,13 @@ module.exports = {
   },
   // get velo stats - price, marketcap, supply
   getVeloInfo: async function(msg) {
+
     // token price
-    let poolInfo;
     let tokenPrice;
 
     try {
       poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
       tokenPrice = poolInfo.data.pairs[0].priceNative;
-    } catch (e) {
-      console.log(e);
-    }
-
-    let fdv;
-
-    // marketcap
-    try {
-      let tokenInfo = await axios.get(urls.veloCoingeckoUrl);
-      fdv = tokenInfo.data.market_data.fully_diluted_valuation.usd; 
     } catch (e) {
       console.log(e);
     }
@@ -829,11 +819,14 @@ module.exports = {
     let avgLockTime = (totalVotes / veTotalSupply) * 4;
 
     const totalTvl = await getTotalTvl();
+    let circulatingSupply = totalSupply - veTotalSupply;
+
+    // maret cap
+    let fdv = tokenPrice * totalSupply;
+    fdv = fdv.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
     let marketCapTvlRatio = fdv / totalTvl;
     marketCapTvlRatio = marketCapTvlRatio.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    fdv = fdv.toLocaleString('en-US', {});
-
-    let circulatingSupply = totalSupply - veTotalSupply;
 
     totalSupply = totalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     veTotalSupply = veTotalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
