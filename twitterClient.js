@@ -1,7 +1,5 @@
 const { TwitterApi } = require('twitter-api-v2');
-const dotenv = require('dotenv');
-
-dotenv.config();
+require('dotenv').config();
 
 const velodromeAlerts = new TwitterApi({
   appKey: process.env.TWITTER_APP_KEY,

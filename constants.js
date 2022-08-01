@@ -50,6 +50,7 @@ const helpList = '```' +
   `COMMAND           | DESCRIPTION\n` +
   `============================================\n` +
   `!velo             | VELO info\n` +
+  `!epoch            | Epoch info\n` +
   `!price            | VELO price\n` +
   `!marketcap        | VELO marketcap\n` +
   `!supply           | VELO, veVELO, %locked\n` +
@@ -66,7 +67,8 @@ const helpList = '```' +
   `!top[5/10/25] apr | Top [5/10/25] by APR\n` +
   `!top[5/10/25] tvl | Top [5/10/25] by TVL\n` +
   `!top[5/10/25 unapr| Top [5/10/25 unfiltered\n` +
-  `stable / volatile | Use with top[5/10/25]` +
+  `stable / volatile | Use with top[5/10/25]\n` +
+  `!venft <id>       | veNFT information` +
   '```';
 
 const staticIcons = {
@@ -75,8 +77,8 @@ const staticIcons = {
   coingeckoFooterIcon: 'https://static.coingecko.com/s/thumbnail-007177f3eca19695592f0b8b0eabbdae282b54154e1be912285c9034ea6cbaf2.png',
   dexscreenerFooterIcon: 'https://cdn-1.webcatalog.io/catalog/dex-screener/dex-screener-icon-filled.png',
   velodromeIcon: 'https://raw.githubusercontent.com/g4nc0r/VelodromeBot/main/static/velodrome.png',
-  velodromeIconSmall: 'https://raw.githubusercontent.com/g4nc0r/VelodromeBot/main/static/velodrome-sm.png',
-  optimismIcon: 'https://raw.githubusercontent.com/g4nc0r/VelodromeBot/main/static/optimism.png'
+  optimismIcon: 'https://raw.githubusercontent.com/g4nc0r/VelodromeBot/main/static/optimism.png',
+  veNftIcon: 'https://raw.github.com/g4nc0r/VelodromeBot/main/static/venftthumbnail.png'
 };
 
 const urls = {

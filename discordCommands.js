@@ -1,6 +1,5 @@
 const axios = require('axios');
 const Discord = require('discord.js');
-const { typeOf } = require('mathjs');
 const Math = require('mathjs')
 
 const { veloUsdcPoolAddress, tokenColors, helpList, staticIcons, urls, veNftAddress } = require('./constants.js');
@@ -38,31 +37,18 @@ module.exports = {
     const currentEpochStart = new Date(((currentEpoch - 1) * 604800000) + 1654128000000);
     const currentEpochEnd = new Date(((currentEpoch) * 604800000) + 1654128000000);
 
-    let bribeList = 
-      '> 🔹 **VELO/USDC** - 6,000 OP\n' +
-      '> 🔹 **VELO/OP** - 6,000 OP\n' +
-      '> 🔹 **OP/USDC** - 6,000 OP\n' +
-      '> 🔹 **OP/WETH** - 6,000 OP\n' +
-      '> 🔹 **sUSD/USDC** - 6,000 OP\n' +
-      '> 🔹 **sETH/WETH** - 1,500 OP, 825 SNX\n' +
-      '> 🔹 **wETH/USDC** - 6,000 OP\n' +
-      '> 🔹 **THALES-USDC** - 6,000 OP\n' +
-      '> 🔹 **AELIN/WETH** - 7,750 OP\n' +
-      '> 🔹 **L2DAO/OP** - 4,000 OP, 400,000 L2DAO'
+    // to add Epoch bribes when new bribe contracts deployed
+
+    console.log('\x1b[31m%s\x1b[0m', `[?] !epoch - user called getEpoch - current epoch: ${currentEpoch}`)
 
     try {
       const embed = new Discord.MessageEmbed()
         .setTitle(`🌌 Epoch ${currentEpoch}`)
-        //.setThumbnail(await getVeloThumbnail())
         .setColor('#4B0082')
         .setDescription(
           `> **🌇 From:** ${currentEpochStart.toLocaleString('en-GB', options)}\n` +
           `> **🌃 Ends:** ${currentEpochEnd.toLocaleString('en-GB', options)}\n`
         )
-        .addFields({
-          name: '💎 Bribes',
-          value: `${bribeList}`
-        })
         .addFields({ 
           name: '🚴 VELO Emissions',
           value: 
@@ -76,11 +62,11 @@ module.exports = {
       console.log(e);
     }
   },
-  // return current VELO USD price
+  // return current VELO USD price from Dexscreener VELO/USDC pool
   getVeloUsdPrice: async function(msg) {
 
-    let poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
-    let tokenPrice = poolInfo.data.pairs[0].priceNative;
+    const poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
+    const tokenPrice = poolInfo.data.pairs[0].priceNative;
 
     console.log('\x1b[32m%s\x1b[0m', `[$] !price - user requested price of VELO: $${tokenPrice}`);
 
@@ -101,8 +87,8 @@ module.exports = {
   // return current VELO market cap from Coingecko
   getMarketCap: async function(msg) {
 
-    let tokenInfo = await axios.get(urls.veloCoingeckoUrl);
-    let fdv = (tokenInfo.data.market_data.fully_diluted_valuation.usd).toLocaleString('en-US', {}); 
+    const tokenInfo = await axios.get(urls.veloCoingeckoUrl);
+    const fdv = (tokenInfo.data.market_data.fully_diluted_valuation.usd).toLocaleString('en-US', {}); 
 
     console.log('\x1b[32m%s\x1b[0m', `[$] !marketcap - user requested marketcap of VELO: $${fdv}`);
     
@@ -131,7 +117,7 @@ module.exports = {
     veTotalSupply = veTotalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     circulatingSupply = circulatingSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-    console.log('\x1b[32m%s\x1b[0m', `[$] !supply - user requested total supply - VELO: ${totalSupply} - veVELO: ${veTotalSupply} - LOCKED: ${percentageLocked}%`);
+    console.log('\x1b[32m%s\x1b[0m', `[$] !supply - user requested total supply - VELO: ${totalSupply} - veVelo: ${veTotalSupply} - locked: ${percentageLocked}%`);
 
     try {
       const embed = new Discord.MessageEmbed()
@@ -157,7 +143,7 @@ module.exports = {
 
     console.log('\x1b[34m%s\x1b[0m', '[?] !pools - user called getPoolsList');    
 
-    let { poolsArray, stablePoolsArray, volatilePoolsArray } = await getAllPoolsLists(2000);
+    const { poolsArray, stablePoolsArray, volatilePoolsArray } = await getAllPoolsLists(2000);
     let stablePoolList = [];
     let volatilePoolList = [];
 
@@ -169,8 +155,8 @@ module.exports = {
       volatilePoolList.push(volatilePoolsArray[i].arg0);
     }
     
-    let stablePoolListString = String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join('\n'));
-    let volatilePoolListString = String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join('\n'));
+    const stablePoolListString = String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join('\n'));
+    const volatilePoolListString = String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join('\n'));
     
     try {
       const embed = new Discord.MessageEmbed()
@@ -189,7 +175,7 @@ module.exports = {
 
     console.log('\x1b[34m%s\x1b[0m', '[?] !allpools - user called getAllPoolsList');      
 
-    let { poolsArray, stablePoolsArray, volatilePoolsArray } = await getAllPoolsLists(0);
+    const { poolsArray, stablePoolsArray, volatilePoolsArray } = await getAllPoolsLists(0);
     let stablePoolList = [];
     let volatilePoolList = [];
    
@@ -201,8 +187,8 @@ module.exports = {
       volatilePoolList.push(volatilePoolsArray[i].arg0);
     }
     
-    let stablePoolListString = String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join('\n'));
-    let volatilePoolListString = String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join('\n'));
+    const stablePoolListString = String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join('\n'));
+    const volatilePoolListString = String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join('\n'));
     
     try {
       const embed = new Discord.MessageEmbed()
@@ -221,16 +207,16 @@ module.exports = {
 
     console.log('\x1b[34m%s\x1b[0m', `[?] !spools - user called getStablePoolList`);
 
-    let vd = await getVelodromeApiData();
+    const vd = await getVelodromeApiData();
     let stablePoolList = [];
 
-    let stablePoolsArray = await getStablePools(vd, 0);
+    const stablePoolsArray = await getStablePools(vd, 0);
 
     for (i=0; i < stablePoolsArray.length; i++) {
       stablePoolList.push(stablePoolsArray[i].arg0);
     }
 
-    let stablePoolListString = String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join('\n'));
+    const stablePoolListString = String(stablePoolList.map((i) => `${stablePoolList.indexOf(i)+1}. ${i}`).join('\n'));
 
     try {
       const embed = new Discord.MessageEmbed()
@@ -247,16 +233,16 @@ module.exports = {
 
     console.log('\x1b[34m%s\x1b[0m', `[?] !vpools - user called getVolatilePoolList`);
 
-    let vd = await getVelodromeApiData();
+    const vd = await getVelodromeApiData();
     let volatilePoolList = [];
 
-    let volatilePoolsArray = await getVolatilePools(vd, 0);
+    const volatilePoolsArray = await getVolatilePools(vd, 0);
 
     for (i=0; i < volatilePoolsArray.length; i++) {
       volatilePoolList.push(volatilePoolsArray[i].arg0);
     }
 
-    let volatilePoolsListString = String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join('\n'));
+    const volatilePoolsListString = String(volatilePoolList.map((i) => `${volatilePoolList.indexOf(i)+1}. ${i}`).join('\n'));
 
     try {
       const embed = new Discord.MessageEmbed()
@@ -275,9 +261,9 @@ module.exports = {
 
     let stablePoolList = [];
     let volatilePoolList = [];
-    let { poolsArray, stablePoolsArray, volatilePoolsArray } = await getAllPoolsLists(0);
+    const { poolsArray, stablePoolsArray, volatilePoolsArray } = await getAllPoolsLists(0);
     
-    console.log('\x1b[34m%s\x1b[0m', `[?] !pools - arg: ${arg.toUpperCase()} - user called getTokenPoolList}`);
+    console.log('\x1b[34m%s\x1b[0m', `[?] !pools - arg: ${arg.toUpperCase()} - user called getTokenPoolList`);
 
     for (let i = 0; i < poolsArray.length; i++) {
       if (poolsArray[i].arg0.includes(arg) || poolsArray[i].arg1.includes(arg)) {
@@ -327,9 +313,8 @@ module.exports = {
 
     arg = arg.toLowerCase();
 
-    let vd = await getVelodromeApiData();
-
-    let poolsArray = await getPools(0);
+    const vd = await getVelodromeApiData();
+    const poolsArray = await getPools(0);
 
     let poolAddress;
    
@@ -341,10 +326,10 @@ module.exports = {
         for (let i=0; i < vd.length; i++) {
           if((vd[i].address).toLowerCase() === (poolAddress).toLowerCase()) {  
 
-            let apr = vd[i].apr;
-            let aprDaily = (apr / 365).toFixed(2);
-            let aprWeekly = (apr / 52).toFixed(2)
-            let aprYearly = apr.toFixed(2);
+            const apr = vd[i].apr;
+            const aprDaily = (apr / 365).toFixed(2);
+            const aprWeekly = (apr / 52).toFixed(2)
+            const aprYearly = apr.toFixed(2);
 
             console.log('\x1b[35m%s\x1b[0m', `[%] !apr - arg: ${arg.toUpperCase()} - user called getPoolApr - ${apr.toFixed(2)}%`)
 
@@ -382,8 +367,7 @@ module.exports = {
 
     console.log('\x1b[35m%s\x1b[0m', '[*] !top5 - user called getTopFive');
 
-    let vd = await getVelodromeApiData();
-    let poolsArray = await getPools(2000);
+    const poolsArray = await getPools(2000);
 
     let poolAprs = [];
     let topFiveListApr = [];
@@ -458,8 +442,7 @@ module.exports = {
 
     console.log('\x1b[35m%s\x1b[0m', '[*] !top10 - user called getTopTen');
   
-    let vd = await getVelodromeApiData();
-    let poolsArray = await getPools(2000);
+    const poolsArray = await getPools(2000);
   
     let poolAprs = [];
     let topTenListApr = [];
@@ -498,7 +481,7 @@ module.exports = {
       poolTvls.push(poolsArray[i].tvl);
     }
   
-    let topTenTvl = poolTvls.sort(function(a, b){return b-a}).slice(0,10);
+    const topTenTvl = poolTvls.sort(function(a, b){return b-a}).slice(0,10);
   
     for (let i=0; i < poolsArray.length; i++) {
       if (topTenTvl.includes(poolsArray[i].tvl)) {
@@ -533,12 +516,12 @@ module.exports = {
   getTopApr: async function(top, msg, filter, poolType) {
 
     if (filter) {
-      console.log('\x1b[35m%s\x1b[0m', `[%] !top${top} apr - UNFILTERED - user called getTopApr`);
+      console.log('\x1b[35m%s\x1b[0m', `[%] !top${top} unapr - UNFILTERED - user called getTopApr`);
     } else {
-      console.log('\x1b[35m%s\x1b[0m', `[%] !top${top} - user called getTopApr`);
+      console.log('\x1b[35m%s\x1b[0m', `[%] !top${top} apr - user called getTopApr`);
     }
 
-    let topList = await topApr(top, filter, poolType);
+    const topList = await topApr(top, filter, poolType);
     let topAprString = '';
 
     for (aprs in topList) {
@@ -550,9 +533,17 @@ module.exports = {
     let poolTypeTitle = '';
 
     if (poolType === 'stable') {
-      poolTypeTitle = 'Stable'
+      if (filter) {
+        poolTypeTitle = 'Unfiltered Stable';
+      } else {
+        poolTypeTitle = 'Stable'
+      }
     } else if (poolType === 'volatile') {
-      poolTypeTitle = 'Volatile'
+      if (filter) {
+        poolTypeTitle = 'Unfiltered Volatile';
+      } else {
+        poolTypeTitle = 'Volatile'
+      }
     }
 
     try {
@@ -574,7 +565,7 @@ module.exports = {
 
     console.log('\x1b[35m%s\x1b[0m',`[$] !top${top} tvl - user called getTopTvl`);
 
-    let topList = await topTvl(top, poolType);
+    const topList = await topTvl(top, poolType);
     let topTvlString = '';
 
     for (tvls in topList) {
@@ -607,7 +598,6 @@ module.exports = {
   getProtocolTvl: async function(msg) {
     
     let totalTvl = await getTotalTvl();
-
     totalTvl = totalTvl.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0});
 
     console.log('\x1b[32m%s\x1b[0m', `[$] !tvl - user requested total protocol TVL: $${totalTvl}`);
@@ -631,9 +621,8 @@ module.exports = {
 
     arg = arg.toLowerCase();
 
-    let vd = await getVelodromeApiData();
-
-    let poolsArray = await getPools(0);
+    const vd = await getVelodromeApiData();
+    const poolsArray = await getPools(0);
 
     // get pool address
     for (let i=0; i < poolsArray.length; i++) {
@@ -813,12 +802,25 @@ module.exports = {
   // get velo stats - price, marketcap, supply
   getVeloInfo: async function(msg) {
     // token price
-    let poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
-    let tokenPrice = poolInfo.data.pairs[0].priceNative;
+    let poolInfo;
+    let tokenPrice;
+
+    try {
+      poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
+      tokenPrice = poolInfo.data.pairs[0].priceNative;
+    } catch (e) {
+      console.log(e);
+    }
+
+    let fdv;
 
     // marketcap
-    let tokenInfo = await axios.get(urls.veloCoingeckoUrl);
-    let fdv = tokenInfo.data.market_data.fully_diluted_valuation.usd; 
+    try {
+      let tokenInfo = await axios.get(urls.veloCoingeckoUrl);
+      fdv = tokenInfo.data.market_data.fully_diluted_valuation.usd; 
+    } catch (e) {
+      console.log(e);
+    }
 
     // onchain supply info
     let { totalSupply, veTotalSupply, percentageLocked } = await onChainFunctions.getTotalSupply();
@@ -826,7 +828,7 @@ module.exports = {
 
     let avgLockTime = (totalVotes / veTotalSupply) * 4;
 
-    let totalTvl = await getTotalTvl();
+    const totalTvl = await getTotalTvl();
     let marketCapTvlRatio = fdv / totalTvl;
     marketCapTvlRatio = marketCapTvlRatio.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     fdv = fdv.toLocaleString('en-US', {});
@@ -839,7 +841,7 @@ module.exports = {
     avgLockTime = avgLockTime.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     circulatingSupply = circulatingSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-    console.log('\x1b[36m%s\x1b[0m', `[*] !velo - user requested VELO info - PRCE: $${tokenPrice} - MARKETCAP: $${fdv} - SUPPLY: ${totalSupply} LOCKED VELO: ${veTotalSupply} LOCKED: ${percentageLocked}% VOTES: ${totalVotes} AVG LOCK TIME: ${avgLockTime}`);
+    console.log('\x1b[36m%s\x1b[0m', `[*] !velo - user requested VELO info - price: $${tokenPrice} - marketcap: $${fdv} - supply: ${totalSupply} - locked: ${veTotalSupply} - %locked: ${percentageLocked}% - votes: ${totalVotes} - avg lock time: ${avgLockTime}`);
 
     try {
       const embed = new Discord.MessageEmbed()
@@ -866,58 +868,61 @@ module.exports = {
       console.log(e);
     }
   },
-  // get volume for pair
-  getDailyVolume: async function(msg) {
-    // to implement
-    onChainFunctions.getDailyVolume();
-  },
-  // get specified veNFT info
+  // return info for specified veNFT
   getVeNftInfo: async function(msg, selectedVeNft) {
     
     try {
-      let { owner, lockedAmount, balanceOfNft, lockEndDate, voted, votePowerPecentage } = await onChainFunctions.getVeNft(selectedVeNft);
+      let { owner, lockedAmount, balanceOfNft, lockEndDate, voted, votePowerPecentage, isAttached } = await onChainFunctions.getVeNft(selectedVeNft);
 
-      let votedSymbol = '';
-
-      let poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
-      let tokenPrice = poolInfo.data.pairs[0].priceNative;
+      const poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
+      const tokenPrice = poolInfo.data.pairs[0].priceNative;
   
-      let estimatedVeNftValue = (lockedAmount * tokenPrice).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); 
+      const estimatedVeNftValue = (lockedAmount * tokenPrice).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); 
   
       lockedAmount = Number(lockedAmount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
       balanceOfNft = balanceOfNft.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
       votePowerPecentage = votePowerPecentage.toLocaleString('en-US', {minimumFractionDigits: 5, maximumFractionDigits: 5})
   
       const options = { month: 'short', day: 'numeric', year: 'numeric'}
-  
+
+      let votedSymbol = '';
+      let attachedSymbol = '';
+
       if (voted) {
-        votedSymbol = '✅'
+        votedSymbol = '✅';
       } else {
-        votedSymbol = '❌'
+        votedSymbol = '❌';
       }
-  
-      console.log(typeOf(lockedAmount))
+
+      if (isAttached) {
+        attachedSymbol = '❌';
+      } else {
+        attachedSymbol = '✅';
+      }
+
+      console.log('\x1b[37m%s\x1b[0m', `[*] !venft ${selectedVeNft} - user called getVeNftInfo - locked: ${lockedAmount} - value: $${estimatedVeNftValue}`);
   
       try {
         const embed = new Discord.MessageEmbed()
         .setTitle(`veNFT ${selectedVeNft}`)
-        .setColor('#000000')
+        .setColor('#002e76')
         .addFields(
-          { name: '🪙 veNFT', value:
+          { name: '🚵 veNFT', value:
             '> **🔒 VELO:** ' + lockedAmount + '\n' +
-            '> **🚴🏻‍♂️ veVELO:** ' + balanceOfNft
+            '> **💫 veVELO:** ' + balanceOfNft
           },
           { name: '💵 Est. USD Value', value: `> $${estimatedVeNftValue}`},
           { name: '⌛ Lock', value: 
             `> **End:** ` + lockEndDate.toLocaleDateString('en-GB', options)
           },
           { name: '🗳️ Vote' , value: 
-            `> 🔹 **% Vote:** ` + votePowerPecentage + '%' + '\n' + 
-            `> 🔹 **Voted Last Epoch:** ` + votedSymbol 
+            `> **% Vote:** ` + votePowerPecentage + '%' + '\n' + 
+            `> **Voted Last Epoch:** ` + votedSymbol + '\n' +
+            `> **Been Reset:** ` + attachedSymbol
           },
-          { name: '**Links**', value: 
-            `> 🔹 **Owner: ** [${owner.substring(0, 2) + '...' + owner.substring(38)}](https://optimistic.etherscan.io/${owner}) \n` +
-            `> 🔹 **Offer: **[Quxotic](https://quixotic.io/asset/${veNftAddress}/${selectedVeNft})`
+          { name: '**🌐 Links**', value: 
+            `> **Owner: ** [${owner.substring(0, 4) + '...' + owner.substring(38)}](https://optimistic.etherscan.io/${owner}) \n` +
+            `> **Offer: **[Quixotic](https://quixotic.io/asset/${veNftAddress}/${selectedVeNft})`
           })
         .setThumbnail(await getVeloThumbnail('veNft'))
         .setTimestamp()
@@ -940,7 +945,7 @@ module.exports = {
 
     let previousDayTvl = await readFileData('tvl.txt');
     
-    let vd = await getVelodromeApiData();
+    const vd = await getVelodromeApiData();
     let totalTvl = 0;
     
     for (let i=0; i < vd.length; i++) {
@@ -954,6 +959,8 @@ module.exports = {
 
     if (dailyPercentageChange > 0) {
       sign = '+';
+    } else if (dailyPercentageChange < 0) {
+      sign = '-'  
     } else {
       sign = '';
     }
@@ -966,7 +973,7 @@ module.exports = {
     console.log('\x1b[31m%s\x1b[0m', `[*] tweeted - @VelodromeAlerts - protcol TVL: $${totalTvl} - previousDayTvl: $${previousDayTvl}- daily change ${sign+dailyPercentageChange}%`);
 
     try {
-      await twitterClient.v2.tweet(`🚴 $VELO Total TVL:  $${totalTvl}  (${sign+dailyPercentageChange})`)
+      await twitterClient.v2.tweet(`🚴 $VELO Total TVL:  $${totalTvl}  (${sign+dailyPercentageChange}%)`)
     } catch (e) {
       console.error(e);
     }
@@ -978,7 +985,7 @@ module.exports = {
 
     console.log('\x1b[31m%s\x1b[0m','[*] tweeted - @VelodromeAlerts - tweetTopFiveTvl');
 
-    let topFiveList = await topTvl(5, null);
+    const topFiveList = await topTvl(5, null);
     let topFiveTvlString = '';
 
     console.log('\x1b[31m%s\x1b[0m', '[*] Tweeted - @VelodromeAlerts - tweetTopFiveTvl');
@@ -999,16 +1006,16 @@ module.exports = {
   tweetTopFiveApr: async function(poolType) {
 
     let topFiveList;
-    let topFiveHeader = '☄️ Top 5 APR';
+    const topFiveHeader = '☄️ Top 5 APR';
     
     if (poolType === 'stable') {
-      topFiveList = await topApr(5, true, 'stable');
+      topFiveList = await topApr(5, false, 'stable');
 
       topFiveHeader = topFiveHeader + ' Stable';
 
       console.log('\x1b[31m%s\x1b[0m', '[*] Tweeted - @VelodromeAlerts - tweetTopFiveApr - STABLE');
-    } else {
-      topFiveList = await topApr(5, true, null);
+    } else if (poolType === 'volatile') {
+      topFiveList = await topApr(5, false, 'volatile');
 
       topFiveHeader = topFiveHeader + ' Volatile';
 
@@ -1030,5 +1037,54 @@ module.exports = {
     } catch (e) {
       console.error(e);
     }
+  },
+  // tweet VELO info
+  tweetVeloInfo: async function() {
+    // token price from Dexscreener VELO/USDC pool
+    const poolInfo = await axios.get(urls.dexscreenerUrl + veloUsdcPoolAddress);
+    const tokenPrice = poolInfo.data.pairs[0].priceNative;
+
+    // marketcap from Coingecko
+    const tokenInfo = await axios.get(urls.veloCoingeckoUrl);
+    let fdv = tokenInfo.data.market_data.fully_diluted_valuation.usd; 
+
+    // onchain supply info
+    let { totalSupply, veTotalSupply, percentageLocked } = await onChainFunctions.getTotalSupply();
+    let totalVotes = await onChainFunctions.getTotalVotes();
+
+    let avgLockTime = (totalVotes / veTotalSupply) * 4;
+
+    const totalTvl = await getTotalTvl();
+    let marketCapTvlRatio = fdv / totalTvl;
+    marketCapTvlRatio = marketCapTvlRatio.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    fdv = fdv.toLocaleString('en-US', {});
+
+    let circulatingSupply = totalSupply - veTotalSupply;
+
+    totalSupply = totalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    veTotalSupply = veTotalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    totalVotes = totalVotes.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    avgLockTime = avgLockTime.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    circulatingSupply = circulatingSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+   let tweetText = 
+      `💵 Price: $${tokenPrice}\n` + 
+      `📈 Marketcap: $${fdv}\n` +
+      `⚗️ Marketcap / TVL: ${marketCapTvlRatio}\n\n` +
+      `📊 Total Supply\n` +
+      `- 🚴🏻‍♂️ $VELO:  ${totalSupply}\n` +
+      `- 🔒 VELO:  ${veTotalSupply}\n` +
+      `- 🟢 Circ. Supply: ${circulatingSupply}\n` +
+      `- 🚴 % Locked: ${percentageLocked}%\n\n` +
+      `🗳️ Votes: ${totalVotes}\n` +
+      `⌛ Avg. Lock Time: ${avgLockTime} years`;
+
+    try {
+      await twitterClient.v2.tweet(tweetText)
+    } catch (e) {
+      console.log(e);
+    }
+
+    console.log('\x1b[36m%s\x1b[0m', `[*] tweeted - @VelodromeAlerts - VELO info - PRICE: $${tokenPrice} - MARKETCAP: $${fdv} - SUPPLY: ${totalSupply} LOCKED VELO: ${veTotalSupply} LOCKED: ${percentageLocked}% VOTES: ${totalVotes} AVG LOCK TIME: ${avgLockTime}`);
   }
 };

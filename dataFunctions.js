@@ -5,8 +5,8 @@ const { tokenColors, stables, peggedExceptions, staticIcons, urls } = require('.
 
 // velodrome API call
 const getVelodromeApiData = async () => {
-  let veloData = await axios.get(urls.velodromeApiUrl);
-  let vd = veloData.data.data;
+  const veloData = await axios.get(urls.velodromeApiUrl);
+  const vd = veloData.data.data;
   return vd;
 };
 
@@ -27,12 +27,14 @@ const getVeloThumbnail = async (arg) => {
 
   for (let i=0; i < tokenColors.length; i++) {
     if (tokenColors[i].arg === arg) {
-      let tokenUrl = urls.coingeckoUrl + tokenColors[i].id;
+      const tokenUrl = urls.coingeckoUrl + tokenColors[i].id;
+
       try {
         let tokenInfo = await axios.get(tokenUrl);
         return tokenInfo.data.image.small;
       } catch (e) {
         console.log(e);
+        return staticIcons.velodromeIcon;
       }
     }
   }
@@ -46,14 +48,14 @@ const getMergedThumbnail = async (arg0, arg1) => {
 
   for (let i=0; i < tokenColors.length; i++) {
     if (tokenColors[i].arg === arg0) {
-      let token0Url = urls.coingeckoUrl + tokenColors[i].id;
-      let token0Info = await axios.get(token0Url);
+      const token0Url = urls.coingeckoUrl + tokenColors[i].id;
+      const token0Info = await axios.get(token0Url);
       token0Img = token0Info.data.image.small;
     }
 
     if (tokenColors[i].arg === arg1) {
-      let token1Url = urls.coingeckoUrl + tokenColors[i].id;
-      let token1Info = await axios.get(token1Url);
+      const token1Url = urls.coingeckoUrl + tokenColors[i].id;
+      const token1Info = await axios.get(token1Url);
       token1Img = token1Info.data.image.small;
     }
   }
@@ -74,8 +76,8 @@ const getMergedThumbnail = async (arg0, arg1) => {
     token1Img = staticIcons.optimismIcon;
   }
 
-  let b64 = await mergeImages([ {src: token1Img, x: 40, y: 0}, {src: token0Img, x:0, y:0}], { width: 100, height: 55, Canvas: Canvas, Image: Image });
-  let b64StrippedHeader = b64.split(';base64,').pop();
+  const b64 = await mergeImages([ {src: token1Img, x: 40, y: 0}, {src: token0Img, x:0, y:0}], { width: 100, height: 55, Canvas: Canvas, Image: Image });
+  const b64StrippedHeader = b64.split(';base64,').pop();
   return b64StrippedHeader;
 };
 
@@ -95,19 +97,19 @@ const getTokenColor = async (arg) => {
 // reset poolsArray and repopulate with latest pool info
 const getPools = async (filter) => {
   
-  let vd = await getVelodromeApiData();
+  const vd = await getVelodromeApiData();
 
-  let stablePoolsArray = await getStablePools(vd, filter);
-  let volatilePoolsArray = await getVolatilePools(vd, filter);
+  const stablePoolsArray = await getStablePools(vd, filter);
+  const volatilePoolsArray = await getVolatilePools(vd, filter);
 
-  let poolsArray = stablePoolsArray.concat(volatilePoolsArray);
+  const poolsArray = stablePoolsArray.concat(volatilePoolsArray);
 
   return poolsArray;
 };
 
 // get sAMM pools only
 const getStablePools = async (velodromeApiCall, filter) => {
-  let vd = velodromeApiCall;
+  const vd = velodromeApiCall;
 
   let stablePoolsArray = [];
   
@@ -117,8 +119,8 @@ const getStablePools = async (velodromeApiCall, filter) => {
 
       if (vd[i].tvl > filter) { 
 
-        let token0 = vd[i].token0.symbol.toLowerCase();
-        let token1 = vd[i].token1.symbol.toLowerCase();
+        const token0 = vd[i].token0.symbol.toLowerCase();
+        const token1 = vd[i].token1.symbol.toLowerCase();
 
         if ((stables.includes(token0) && stables.includes(token1) ||
           (peggedExceptions.includes(token0) && peggedExceptions.includes(token1)))
@@ -141,9 +143,9 @@ const getStablePools = async (velodromeApiCall, filter) => {
 
 // get vAMM pools only
 const getVolatilePools = async (velodromeApiCall, filter) => {
-  let vd = velodromeApiCall;
+  const vd = velodromeApiCall;
 
-  volatilePoolsArray = [];
+  let volatilePoolsArray = [];
   
   for (let i=0; i < vd.length; i++) {
 
@@ -151,8 +153,8 @@ const getVolatilePools = async (velodromeApiCall, filter) => {
 
       if (vd[i].tvl > filter) {
 
-        let token0 = vd[i].token0.symbol.toLowerCase();
-        let token1 = vd[i].token1.symbol.toLowerCase();
+        const token0 = vd[i].token0.symbol.toLowerCase();
+        const token1 = vd[i].token1.symbol.toLowerCase();
 
         if (!(stables.includes(token0) && stables.includes(token1)) &&
         !((token0).includes('vamm-') || (token0).includes('samm-')) &&
@@ -179,20 +181,20 @@ const getVolatilePools = async (velodromeApiCall, filter) => {
 // get lists of all types of pools
 const getAllPoolsLists = async (filter) => {
 
-  let vd = await getVelodromeApiData();
+  const vd = await getVelodromeApiData();
 
-  let stablePoolsArray = await getStablePools(vd, filter);
-  let volatilePoolsArray = await getVolatilePools(vd, filter);
+  const stablePoolsArray = await getStablePools(vd, filter);
+  const volatilePoolsArray = await getVolatilePools(vd, filter);
 
-  let poolsArray = stablePoolsArray.concat(volatilePoolsArray);
+  const poolsArray = stablePoolsArray.concat(volatilePoolsArray);
 
   return { poolsArray, stablePoolsArray, volatilePoolsArray };
-}
+};
 
 // return total protocol TVL
 const getTotalTvl = async () => {
 
-  let vd = await getVelodromeApiData();
+  const vd = await getVelodromeApiData();
   let totalTvl = 0;
 
   for (let i=0; i < vd.length; i++) {
@@ -209,12 +211,12 @@ const topTvl = async (top, poolType) => {
 
   if (poolType === 'stable') {
   
-    let vd = await getVelodromeApiData();
+    const vd = await getVelodromeApiData();
     poolsArray = await getStablePools(vd, 0)
   
   } else if (poolType === 'volatile') {
     
-    let vd = await getVelodromeApiData();
+    const vd = await getVelodromeApiData();
     poolsArray = await getVolatilePools(vd, 0)
   
   } else {
@@ -228,7 +230,7 @@ const topTvl = async (top, poolType) => {
     poolTvls.push(poolsArray[i].tvl);
   }
 
-  let topTvl = poolTvls.sort(function(a, b){return b-a}).slice(0, top);
+  const topTvl = poolTvls.sort(function(a, b){return b-a}).slice(0, top);
 
   for (let i=0; i < poolsArray.length; i++) {
     if (topTvl.includes(poolsArray[i].tvl)) {
@@ -255,11 +257,11 @@ const topApr = async (top, filter, poolType) => {
     }
 
     if (poolType === 'stable') {
-      let vd = await getVelodromeApiData();
+      const vd = await getVelodromeApiData();
       poolsArray = await getStablePools(vd, filterThreshold);
 
     } else if (poolType === 'volatile') {
-      let vd = await getVelodromeApiData();
+      const vd = await getVelodromeApiData();
       poolsArray = await getVolatilePools(vd, filterThreshold);
 
     } else {
@@ -274,7 +276,7 @@ const topApr = async (top, filter, poolType) => {
       poolAprs.push(poolsArray[i].apr);
     }
 
-    let topFiveApr = poolAprs.sort(function(a, b){return b-a}).slice(0, top);
+    const topFiveApr = poolAprs.sort(function(a, b){return b-a}).slice(0, top);
 
     for (let i=0; i < poolsArray.length; i++) {
       if (topFiveApr.includes(poolsArray[i].apr)) {
@@ -310,7 +312,7 @@ const writeFileData = async (fileName, content) => {
 
   fs.writeFileSync(`./static/${fileName}`, content);
   console.log(`[!] tvl.txt updated with value: ${content}`);
-}
+};
 
 module.exports = { getVelodromeApiData, getVeloThumbnail, getMergedThumbnail, getTokenColor, getPools, 
   getStablePools, getVolatilePools, getAllPoolsLists, getTotalTvl, topTvl, topApr, readFileData, writeFileData };

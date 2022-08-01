@@ -16,17 +16,17 @@ client.on('ready', () => {
   });
 
   const testingChannel = client.channels.cache.get(process.env.TESTING_CHANNEL_ID);
-  testingChannel.send('🚴‍♂️ VelodromeBribeBot has booted up');
+  testingChannel.send('🚴‍♂️ VelodromeBot has booted up');
 });
 
 client.on('messageCreate', msg => {
   // prevent bot from replying to own messages
   if (msg.author.bot === client.user) return;
-
+  
   // ignore any non-prefixed statements
   const prefix = '!';
   if (!msg.content.startsWith(prefix)) return;
-
+  
   // removes ! prefix, trims any extra spaces, splits the string by one or many spaces
   const arg = msg.content.slice(prefix.length).trim().split(/ +/g);
   // remove one element from the array and return it. Command is returned, and args separated
@@ -48,7 +48,7 @@ client.on('messageCreate', msg => {
     discordCommands.getEpoch(msg);
   }
 
-  // return current VELO USD price
+  // return current VELO USD price - source Dexscreener VELO/USDC
   if (command === 'price') {
     discordCommands.getVeloUsdPrice(msg);
   }
@@ -63,7 +63,7 @@ client.on('messageCreate', msg => {
     discordCommands.getTotalSupply(msg);
   }
 
-  // return pools filtered by TVL or pool containing a specified token
+  // return pools filtered by >$2,000 TVL or pool containing a specified token
   if (command === 'pools') {
 
     if (arg.length === 0) {
@@ -87,12 +87,12 @@ client.on('messageCreate', msg => {
     discordCommands.getAllPoolList(msg);
   }
 
-  // return list of sAMM stable pools
+  // return list of unfiltered sAMM stable pools
   if (command === 'spools') {
     discordCommands.getStablePoolList(msg);
   }
 
-  // return list of vAMM volatile pools
+  // return list of unfiltered vAMM volatile pools
   if (command === 'vpools') {
     discordCommands.getVolatilePoolList(msg);
   }
@@ -100,13 +100,19 @@ client.on('messageCreate', msg => {
   // return pool daily, weekly and yearly APR
   if (command === 'apr') {
 
+    if (arg.length === 0) {
+      msg.reply('Please specify a pool. Type \`!pools\` to see pools with >$2,000 TVL, or \`!allpools\` for all.');
+      console.log('\x1b[31m%s\x1b[0m', '[*] !apr - User requested pool APR but provided no argument');
+      return;
+    }
+
     if (arg.length > 1) {
       msg.reply('Please only provide one argument. Type \`!pools\` to see pools with >$2,000 TVL, or \`!allpools\` for all.');
       console.log('\x1b[31m%s\x1b[0m', '[*] !apr - User requested pool APR but used more than one argument');
       return;
     }
   
-    let selectedPool = arg[0];
+    const selectedPool = arg[0];
     discordCommands.getPoolApr(msg, selectedPool);
   }
 
@@ -137,6 +143,19 @@ client.on('messageCreate', msg => {
     }
 
     if ((arg[0].toLowerCase() === 'unapr') || (arg[0].toLowerCase() === 'unapy')) {
+
+      if (arg.length > 1) {
+        if (arg[1].toLowerCase() === 'stable') {
+          discordCommands.getTopApr(5, msg, true, 'stable');
+          return;
+        }
+
+        if (arg[1].toLowerCase() === 'volatile') {
+          discordCommands.getTopApr(5, msg, true, 'volatile');
+          return;
+        }
+      }
+
       discordCommands.getTopApr(5, msg, true);
       return;
     }
@@ -195,6 +214,19 @@ client.on('messageCreate', msg => {
     }
 
     if ((arg[0].toLowerCase() === 'unapr') || (arg[0].toLowerCase() === 'unapy')) {
+
+      if (arg.length > 1) {
+        if (arg[1].toLowerCase() === 'stable') {
+          discordCommands.getTopApr(10, msg, true, 'stable');
+          return;
+        }
+
+        if (arg[1].toLowerCase() === 'volatile') {
+          discordCommands.getTopApr(10, msg, true, 'volatile');
+          return;
+        }
+      }
+
       discordCommands.getTopApr(10, msg, true);
       return;
     }
@@ -211,7 +243,6 @@ client.on('messageCreate', msg => {
 
           discordCommands.getTopTvl(10, msg, 'volatile');
           return;
-
         }
       }
       
@@ -253,6 +284,19 @@ client.on('messageCreate', msg => {
     }
 
     if ((arg[0].toLowerCase() === 'unapr') || (arg[0].toLowerCase() === 'unapy')) {
+
+      if (arg.length > 1) {
+        if (arg[1].toLowerCase() === 'stable') {
+          discordCommands.getTopApr(25, msg, true, 'stable');
+          return;
+        }
+
+        if (arg[1].toLowerCase() === 'volatile') {
+          discordCommands.getTopApr(25, msg, true, 'volatile');
+          return;
+        }
+      }
+
       discordCommands.getTopApr(25, msg, true);
       return;
     }
@@ -305,24 +349,24 @@ client.on('messageCreate', msg => {
   // get pool APR and TVL
   if (command === 'pool') {
 
+    if (arg.length === 0) {
+      msg.reply('Please provide a pool.');
+      return;
+    }
+
     if (arg.length > 1) {
       msg.reply('Please only provide one argument. Type \`!pools\` to see pools with >$2,000 TVL, or \`!allpools\` for all.');
       console.log('\x1b[31m%s\x1b[0m', '[*] !poolinfo - User requested pool APR but used more than one argument');
       return;
     }
 
-    let selectedPool = arg[0];
+    const selectedPool = arg[0];
     discordCommands.getPoolInfo(msg, selectedPool);
   }
 
   // get velo stats - price, marketcap, supply
   if (command === 'velo') {
     discordCommands.getVeloInfo(msg);
-  }
-
-  // to implement
-  if (command === 'volume') {
-    discordCommands.getDailyVolume();
   }
 
   // return specified veNFT info
@@ -336,7 +380,7 @@ client.on('messageCreate', msg => {
       msg.reply('Please specify one veNFT number.');
     }
 
-    let selectedVeNft = arg[0];
+    const selectedVeNft = arg[0];
     discordCommands.getVeNftInfo(msg, selectedVeNft);
   }
 
@@ -348,7 +392,8 @@ client.on('messageCreate', msg => {
 });
 
 // login to Discord
-client.login(process.env.TOKEN)
+//client.login(process.env.TOKEN)
+client.login(process.env.TESTING_TOKEN);
 
 // enable GET requests to ping for uptime
 const express = require('express')
@@ -368,8 +413,13 @@ const cron = require('node-cron');
 
 cron.schedule('0 0 * * * ', function() {
   console.log('\x1b[31m%s\x1b[0m', '[*] cron job initiated');
+
   discordCommands.tweetTopFiveTvl();
-  discordCommands.tweetTopFiveApr();
-  discordCommands.tweetTopFiveApr('stable');
-  discordCommands.tweetProtocolTvl();
+  setTimeout(discordCommands.tweetTopFiveApr, 5000, 'volatile');
+  setTimeout(discordCommands.tweetTopFiveApr, 10000, 'stable');
+  setTimeout(discordCommands.tweetVeloInfo, 15000);
+  setTimeout(discordCommands.tweetProtocolTvl, 20000);
 });
+
+
+
