@@ -421,5 +421,3 @@ cron.schedule('0 0 * * * ', function() {
   setTimeout(discordCommands.tweetProtocolTvl, 20000);
 });
 
-
-

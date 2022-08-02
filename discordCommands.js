@@ -821,11 +821,11 @@ module.exports = {
     const totalTvl = await getTotalTvl();
     let circulatingSupply = totalSupply - veTotalSupply;
 
-    // maret cap
+    // market cap
     let fdv = tokenPrice * totalSupply;
-    fdv = fdv.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-
     let marketCapTvlRatio = fdv / totalTvl;
+
+    fdv = fdv.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     marketCapTvlRatio = marketCapTvlRatio.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     totalSupply = totalSupply.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -952,8 +952,6 @@ module.exports = {
 
     if (dailyPercentageChange > 0) {
       sign = '+';
-    } else if (dailyPercentageChange < 0) {
-      sign = '-'  
     } else {
       sign = '';
     }
@@ -999,7 +997,7 @@ module.exports = {
   tweetTopFiveApr: async function(poolType) {
 
     let topFiveList;
-    const topFiveHeader = '☄️ Top 5 APR';
+    let topFiveHeader = '☄️ Top 5 APR';
     
     if (poolType === 'stable') {
       topFiveList = await topApr(5, false, 'stable');
